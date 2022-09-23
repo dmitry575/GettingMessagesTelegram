@@ -1,28 +1,53 @@
-﻿using TL;
+﻿using GettingMessagesTelegram.Helpers;
+using Microsoft.Extensions.Logging;
+using TL;
 using WTelegram;
 
 namespace GettingMessagesTelegram.Services;
 
-public class ChannelsService
+public class ChannelsService : IChannelsService
 {
     private readonly Client _clientTelegram;
+    private readonly ILogger<ChannelsService> _logger;
 
-    public ChannelsService(Client clientTelegram)
+    public ChannelsService(Client clientTelegram, ILogger<ChannelsService> logger)
     {
         _clientTelegram = clientTelegram;
+        _logger = logger;
     }
 
-    public async Task Work()
+    public async Task WorkAsync(CancellationToken cancellationToken)
     {
-        var my = await _clientTelegram.LoginUserIfNeeded();
+        var me = await _clientTelegram.LoginUserIfNeeded();
+        _logger.LogInformation($"Loggin by: {me.first_name}");
         try
         {
             var mes = await _clientTelegram.Messages_GetHistory(new InputPeerChannel(1101806611, 6504238671879902293));
+            
             foreach (var mesMessage in mes.Messages)
             {
                 if (mesMessage is Message m)
                 {
-                    Console.WriteLine(m.ID + "\r\n" + m.message + "\r\n" + m.post_author);
+                    if (MessageExists(m.grouped_id, m.ID))
+                    {
+                        _logger.LogInformation("found last exists message: "+m.ID + "\t" + m.message + "\t" + m.post_author);    
+                        break;
+                    }
+                    _logger.LogInformation(m.ID + "\t" + m.message + "\t" + m.post_author);
+//_clientTelegram.Channels_ExportMessageLink()
+                    var link = UrlHelper.GetTmeUrl(m.message);
+                    if (!string.IsNullOrEmpty(link))
+                    {
+                        var linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(link);
+                        _logger.LogInformation(linkInfo?.message);
+                        var path = link.Replace("https://t.me/", "");
+                        linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(path);
+                        _logger.LogInformation(linkInfo?.message);
+                        var ll = await _clientTelegram.Help_GetRecentMeUrls(link);
+                        //_logger.LogInformation(ll?.urls.Length);
+                    }
+
+
                 }
             }
             //var mess  =await _clientTelegram.GetMessages(new InputPeerChannel(1101806611, 6504238671879902293));
@@ -62,5 +87,13 @@ public class ChannelsService
                     break;
             }
         // Console.WriteLine(chanels.chats.Count);
+    }
+
+    /// <summary>
+    /// If exists messages
+    /// </summary>
+    private bool MessageExists(long channelId, long messageId)
+    {
+        return false;
     }
 }
