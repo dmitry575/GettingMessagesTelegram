@@ -6,8 +6,10 @@ static string Config(string what)
 {
     switch (what)
     {
-        case "api_id": return "5781151608:AAEU-nS4RORZYaUZzbcaWOmGA7_60AirUII";
-        case "api_hash": return "5781151608:AAEU-nS4RORZYaUZzbcaWOmGA7_60AirUII";
+        case "api_id": return "71522";
+        case "api_hash": return "****";
+        case "phone_number": return "****";
+        case "verification_code": Console.Write("Code: "); return Console.ReadLine();
         default: return null;
     }
 }
