@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Services;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,10 @@ public static class ConfigureServices
         });
 
         services.AddLogging();
+        
+        services.Configure<TelegramConfig>(configuration.GetSection("Telegram"));
+        services.Configure<ChannelsConfig>(configuration.GetSection("Channels"));
+        //services.Configure<ChannelsConfig>(options => configuration.GetSection("Channels").Bind(options));
         return services;
     }
 }

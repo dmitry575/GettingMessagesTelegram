@@ -26,7 +26,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
         services.Configure(configuration);
-
+        services.
         var client = new WTelegram.Client(Config);
         services.AddSingleton(client);
 
@@ -49,9 +49,9 @@ static string Config(string what)
 {
     switch (what)
     {
-        case "api_id": return "";
-        case "api_hash": return "";
-        case "phone_number": return "";
+        case "api_id": return "71522";
+        case "api_hash": return "9a871fe9b5c3abad4786d6ea693b0228";
+        case "phone_number": return "+79172552240";
         case "verification_code":
             Console.Write("Code: ");
             return Console.ReadLine();

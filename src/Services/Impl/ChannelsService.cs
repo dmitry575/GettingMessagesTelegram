@@ -45,6 +45,8 @@ public class ChannelsService : IChannelsService
                         _logger.LogInformation(linkInfo?.message);
                         var ll = await _clientTelegram.Help_GetRecentMeUrls(link);
                         //_logger.LogInformation(ll?.urls.Length);
+                        //_clientTelegram.Get
+                        _clientTelegram.GetFullChat(new InputPeerChannel())
                     }
 
 
