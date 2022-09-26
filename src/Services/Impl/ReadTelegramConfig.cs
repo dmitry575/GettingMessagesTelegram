@@ -1,15 +1,25 @@
-﻿namespace GettingMessagesTelegram.Services.Impl;
+﻿using GettingMessagesTelegram.Config;
+
+namespace GettingMessagesTelegram.Services.Impl;
 
 public class ReadTelegramConfig : IReadTelegramConfig
 {
-    TelegramConfig
+    private readonly TelegramConfig _telegramConfig;
+
+    public ReadTelegramConfig(TelegramConfig telegramConfig)
+    {
+        _telegramConfig = telegramConfig;
+    }
+
     public string Read(string what)
     {
         switch (what)
         {
-            case "api_id": return "71522";
-            case "api_hash": return "9a871fe9b5c3abad4786d6ea693b0228";
-            case "phone_number": return "+79172552240";
+            case "api_id": return _telegramConfig.ApiId;
+            case "api_hash": return _telegramConfig.ApiHash;
+            case "phone_number": return _telegramConfig.PhoneNumber;
+            
+            // if you first time to execute application you need to create session on this device
             case "verification_code":
                 Console.Write("Code: ");
                 return Console.ReadLine();

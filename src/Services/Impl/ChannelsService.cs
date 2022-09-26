@@ -1,5 +1,7 @@
-﻿using GettingMessagesTelegram.Helpers;
+﻿using GettingMessagesTelegram.Config;
+using GettingMessagesTelegram.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TL;
 using WTelegram;
 
@@ -9,11 +11,15 @@ public class ChannelsService : IChannelsService
 {
     private readonly Client _clientTelegram;
     private readonly ILogger<ChannelsService> _logger;
+    private readonly ChannelsConfig _channelsConfig;
 
-    public ChannelsService(Client clientTelegram, ILogger<ChannelsService> logger)
+    private enum StatusProcess {Ok, Failed, Break}
+    
+    public ChannelsService(Client clientTelegram, ILogger<ChannelsService> logger, IOptions<ChannelsConfig> channelsConfig)
     {
         _clientTelegram = clientTelegram;
         _logger = logger;
+        _channelsConfig = channelsConfig.Value;
     }
 
     public async Task WorkAsync(CancellationToken cancellationToken)
@@ -22,35 +28,23 @@ public class ChannelsService : IChannelsService
         _logger.LogInformation($"Loggin by: {me.first_name}");
         try
         {
+
+            foreach (var channel in _channelsConfig)
+            {
+                _logger.LogInformation("reading messages from channel: {channel.Id}");
+                var messages = await _clientTelegram.Messages_GetHistory(new InputPeerChannel(channel.Id, channel.HashAccess));
+                foreach (var message in messages.Messages)
+                {
+                    await ProcessMessage(message);
+                }
+                _logger.LogInformation("reading messages was finished from channel: {channel.Id}");
+            }
+            
             var mes = await _clientTelegram.Messages_GetHistory(new InputPeerChannel(1101806611, 6504238671879902293));
             
             foreach (var mesMessage in mes.Messages)
             {
-                if (mesMessage is Message m)
-                {
-                    if (MessageExists(m.grouped_id, m.ID))
-                    {
-                        _logger.LogInformation("found last exists message: "+m.ID + "\t" + m.message + "\t" + m.post_author);    
-                        break;
-                    }
-                    _logger.LogInformation(m.ID + "\t" + m.message + "\t" + m.post_author);
-//_clientTelegram.Channels_ExportMessageLink()
-                    var link = UrlHelper.GetTmeUrl(m.message);
-                    if (!string.IsNullOrEmpty(link))
-                    {
-                        var linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(link);
-                        _logger.LogInformation(linkInfo?.message);
-                        var path = link.Replace("https://t.me/", "");
-                        linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(path);
-                        _logger.LogInformation(linkInfo?.message);
-                        var ll = await _clientTelegram.Help_GetRecentMeUrls(link);
-                        //_logger.LogInformation(ll?.urls.Length);
-                        //_clientTelegram.Get
-                        _clientTelegram.GetFullChat(new InputPeerChannel())
-                    }
-
-
-                }
+               
             }
             //var mess  =await _clientTelegram.GetMessages(new InputPeerChannel(1101806611, 6504238671879902293));
 
@@ -89,6 +83,46 @@ public class ChannelsService : IChannelsService
                     break;
             }
         // Console.WriteLine(chanels.chats.Count);
+    }
+
+    private async Task<StatusProcess> ProcessMessage(MessageBase message)
+    {
+        if (message is Message m)
+        {
+            if (MessageExists(m.grouped_id, m.ID))
+            {
+                _logger.LogInformation("found last exists message: "+m.ID + "\t" + m.message + "\t" + m.post_author);    
+                return StatusProcess.Break;
+            }
+            _logger.LogInformation(m.ID + "\t" + m.post_author);
+
+            await SaveMessage(m);
+            
+//_clientTelegram.Channels_ExportMessageLink()
+            var link = UrlHelper.GetTmeUrl(m.message);
+            if (!string.IsNullOrEmpty(link))
+            {
+                _logger.LogInformation($"found the link {link} in the message {m.ID}");
+                // var linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(link);
+                // _logger.LogInformation(linkInfo?.message);
+                // var path = link.Replace("https://t.me/", "");
+                // linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(path);
+                // _logger.LogInformation(linkInfo?.message);
+                // var ll = await _clientTelegram.Help_GetRecentMeUrls(link);
+                // //_logger.LogInformation(ll?.urls.Length);
+                // //_clientTelegram.Get
+                // _clientTelegram.GetFullChat(new InputPeerChannel())
+            }
+
+            return StatusProcess.Ok;
+        }
+
+        return StatusProcess.Failed;
+    }
+
+    private async Task SaveMessage(Message message)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>

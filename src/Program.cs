@@ -26,35 +26,23 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
         services.Configure(configuration);
-        services.
-        var client = new WTelegram.Client(Config);
-        services.AddSingleton(client);
-
+        
+        
         services.AddHostedService<Worker>();
+        var readerConfig = services.BuildServiceProvider().GetService<IReadTelegramConfig>();
+
+        if (readerConfig != null)
+        {
+            var client = new WTelegram.Client(readerConfig.Read);
+            services.AddSingleton(client);
+        }
+        
     })
     .Build();
 
 
 Console.WriteLine($"Version: {fvi.FileVersion}");
-// var processes = new Processes(cancellationTokenSource);
-// AppDomain.CurrentDomain.ProcessExit += processes.ProcessExit;
-//
-// using var client = new WTelegram.Client(Config);
-// var channelService = new ChannelsService(client);
-
-//await channelService.WorkAsync(token);
+Console.WriteLine($"Starting the reading message from Telegram");
 await host.RunAsync();
 
-static string Config(string what)
-{
-    switch (what)
-    {
-        case "api_id": return "71522";
-        case "api_hash": return "9a871fe9b5c3abad4786d6ea693b0228";
-        case "phone_number": return "+79172552240";
-        case "verification_code":
-            Console.Write("Code: ");
-            return Console.ReadLine();
-        default: return null;
-    }
-}
+

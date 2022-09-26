@@ -2,6 +2,7 @@
 using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Services;
+using GettingMessagesTelegram.Services.Impl;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,8 @@ public static class ConfigureServices
 
         services.AddSingleton(configuration);
         services.AddSingleton<IChannelsService, ChannelsService>();
-
+        services.AddSingleton<IReadTelegramConfig, ReadTelegramConfig>();
+        
         services.AddLogging(configure =>
         {
             configure.SetMinimumLevel(LogLevel.Trace);
