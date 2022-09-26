@@ -11,6 +11,11 @@ public sealed class Channel
     public long Id { get; set; }
     
     /// <summary>
+    /// Id channel into Telegram
+    /// </summary>
+    public long BaseId { get; set; }
+    
+    /// <summary>
     /// Author of channel
     /// </summary>
     public string Author { get; set; }

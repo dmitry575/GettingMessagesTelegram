@@ -1,6 +1,6 @@
 ﻿namespace GettingMessagesTelegram.Data;
 
-public class Message
+public class Comment
 {
     /// <summary>
     /// Id message
@@ -28,16 +28,9 @@ public class Message
     public DateTime DateCreated { get; set; }
     
     /// <summary>
-    /// How many peoople viewed message
+    /// Id of relation message
     /// </summary>
-    public long ViewCount { get; set; }
+    public long MessageId { get; set; }
     
-    /// <summary>
-    /// Id of relation channel
-    /// </summary>
-    public long ChannelId { get; set; }
-    
-    public virtual Channel Channel { get; set; }
-    
-    public virtual ICollection<Comment> Comments { get; set; }
+    public virtual Message Message { get; set; }
 }

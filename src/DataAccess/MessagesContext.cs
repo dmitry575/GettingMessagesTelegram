@@ -25,6 +25,7 @@ public class MessagesContext : DbContext
         modelBuilder
             .ApplyConfiguration(new ChannelMap())
             .ApplyConfiguration(new MessageMap())
+            .ApplyConfiguration(new CommentMap())
             .ConfigureDateTimeToUtc();
     }
 

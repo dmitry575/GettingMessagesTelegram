@@ -5,21 +5,40 @@ using Microsoft.Extensions.Options;
 using TL;
 using WTelegram;
 
-namespace GettingMessagesTelegram.Services;
+namespace GettingMessagesTelegram.Services.Impl;
 
 public class ChannelsService : IChannelsService
 {
+    /// <summary>
+    /// Client for Telegram
+    /// </summary>
     private readonly Client _clientTelegram;
     private readonly ILogger<ChannelsService> _logger;
-    private readonly ChannelsConfig _channelsConfig;
-
-    private enum StatusProcess {Ok, Failed, Break}
     
-    public ChannelsService(Client clientTelegram, ILogger<ChannelsService> logger, IOptions<ChannelsConfig> channelsConfig)
+    /// <summary>
+    /// Configurationn for getting messages for channels
+    /// </summary>
+    private readonly ChannelsConfig _channelsConfig;
+    
+    /// <summary>
+    /// Min date for parsing messages
+    /// </summary>
+    private readonly DateTime _maxDate;
+
+    private enum StatusProcess
+    {
+        Ok,
+        Failed,
+        Break
+    }
+
+    public ChannelsService(Client clientTelegram, ILogger<ChannelsService> logger,
+        IOptions<ChannelsConfig> channelsConfig)
     {
         _clientTelegram = clientTelegram;
         _logger = logger;
         _channelsConfig = channelsConfig.Value;
+        _maxDate = DateTime.UtcNow.AddYears(-1);
     }
 
     public async Task WorkAsync(CancellationToken cancellationToken)
@@ -28,44 +47,62 @@ public class ChannelsService : IChannelsService
         _logger.LogInformation($"Loggin by: {me.first_name}");
         try
         {
-
             foreach (var channel in _channelsConfig)
             {
-                _logger.LogInformation("reading messages from channel: {channel.Id}");
-                var messages = await _clientTelegram.Messages_GetHistory(new InputPeerChannel(channel.Id, channel.HashAccess));
-                foreach (var message in messages.Messages)
+                var peerChanel = new InputPeerChannel(channel.Id, channel.HashAccess);
+                _logger.LogInformation($"reading messages from channel: {channel.Id}");
+                var lastDate = DateTime.MaxValue;
+                var needBreak = false;
+                while (_maxDate<lastDate && !needBreak)
                 {
-                    await ProcessMessage(message);
-                }
-                _logger.LogInformation("reading messages was finished from channel: {channel.Id}");
-            }
-            
-            var mes = await _clientTelegram.Messages_GetHistory(new InputPeerChannel(1101806611, 6504238671879902293));
-            
-            foreach (var mesMessage in mes.Messages)
-            {
-               
-            }
-            //var mess  =await _clientTelegram.GetMessages(new InputPeerChannel(1101806611, 6504238671879902293));
+                    var messages =
+                        await _clientTelegram.Messages_GetHistory(peerChanel, offset_date: lastDate, limit:100);
+                    foreach (var message in messages.Messages)
+                    {
+                        _logger.LogInformation($"new message: {message.ID} - start");
+                        var (status, messageData) = await ProcessMessage(message);
+                        if (status == StatusProcess.Break)
+                        {
+                            // set flag what this last circkle
+                            needBreak = true;
+                        }
 
-            var channels =
-                await _clientTelegram.Channels_GetChannels(new[] { new InputChannel(1101806611, 6504238671879902293) });
-            foreach (var channelsChat in channels.chats)
-            {
-                Console.WriteLine($"{channelsChat.Key}:  {channelsChat.Value.Title}");
-                var messages =
-                    await _clientTelegram.GetMessages(new InputPeerChannel(1001101806611, 6504238671879902293));
-                foreach (var message in messages.Messages)
-                {
-                    Console.WriteLine($"message: {message.From.ID}, {message.Peer.ID}, {message.Date}");
+                        var comments = await _clientTelegram.Messages_GetDiscussionMessage(peerChanel, message.ID);
+                        await ProcessComments(comments);
+                        
+                        lastDate = message.Date;
+                        _logger.LogInformation(
+                            $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
+                    }
                 }
+
+                if (lastDate < _maxDate)
+                {
+                    _logger.LogInformation(
+                        $"parsing too many messages last date: {lastDate.ToString("yyyy.MM.dd")}, max date: {_maxDate.ToString("yyyy.MM.dd")}");
+                }
+
+                _logger.LogInformation("reading messages was finished from channel: {channel.Id}");
             }
         }
         catch (Exception e)
         {
+            _logger.LogError("reading messages failed");
             Console.WriteLine(e);
         }
+    }
 
+    /// <summary>
+    /// Processing comments for message
+    /// </summary>
+    /// <param name="comments"></param>
+    private async Task ProcessComments(Messages_DiscussionMessage comments)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task PrintAllChats()
+    {
         var chats = await _clientTelegram.Messages_GetAllChats();
         Console.WriteLine("This user has joined the following:");
         foreach (var (id, chat) in chats.chats)
@@ -82,23 +119,22 @@ public class ChannelsService : IChannelsService
                     Console.WriteLine($"{id}: Channel {channel.username}: {channel.title}, {channel.access_hash}");
                     break;
             }
-        // Console.WriteLine(chanels.chats.Count);
     }
 
-    private async Task<StatusProcess> ProcessMessage(MessageBase message)
+    private async Task<(StatusProcess, Data.Message)> ProcessMessage(MessageBase message)
     {
         if (message is Message m)
         {
-            if (MessageExists(m.grouped_id, m.ID))
+            if (MessageExists(m.grouped_id, m.ID, out var messageData))
             {
-                _logger.LogInformation("found last exists message: "+m.ID + "\t" + m.message + "\t" + m.post_author);    
-                return StatusProcess.Break;
+                _logger.LogInformation("found last exists message: " + m.ID + "\t" + m.message + "\t" + m.post_author);
+                return (StatusProcess.Break,messageData);
             }
+
             _logger.LogInformation(m.ID + "\t" + m.post_author);
 
-            await SaveMessage(m);
-            
-//_clientTelegram.Channels_ExportMessageLink()
+            var messageData = await SaveMessage(m);
+
             var link = UrlHelper.GetTmeUrl(m.message);
             if (!string.IsNullOrEmpty(link))
             {
@@ -114,22 +150,26 @@ public class ChannelsService : IChannelsService
                 // _clientTelegram.GetFullChat(new InputPeerChannel())
             }
 
-            return StatusProcess.Ok;
+            return (StatusProcess.Ok,messageData);
         }
 
-        return StatusProcess.Failed;
+        return (StatusProcess.Failed,null);
     }
 
-    private async Task SaveMessage(Message message)
+    private async Task<Data.Message> SaveMessage(Message message)
     {
-        throw new NotImplementedException();
+        return new Data.Message
+        {
+
+        };
     }
 
     /// <summary>
     /// If exists messages
     /// </summary>
-    private bool MessageExists(long channelId, long messageId)
+    private bool MessageExists(long channelId, long messageId, out Data.Message message)
     {
+        message = null;
         return false;
     }
 }

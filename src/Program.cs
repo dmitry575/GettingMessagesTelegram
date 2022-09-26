@@ -1,9 +1,13 @@
 ﻿using System.Diagnostics;
+using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DI;
 using Microsoft.Extensions.Configuration;
 using GettingMessagesTelegram.Services;
+using GettingMessagesTelegram.Services.Impl;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using WTelegram;
 
 var cancellationTokenSource = new CancellationTokenSource();
 var token = cancellationTokenSource.Token;
@@ -26,17 +30,15 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
         services.Configure(configuration);
-        
-        
-        services.AddHostedService<Worker>();
-        var readerConfig = services.BuildServiceProvider().GetService<IReadTelegramConfig>();
 
-        if (readerConfig != null)
+        services.AddHostedService<Worker>();
+
+        services.AddTransient(sp =>
         {
-            var client = new WTelegram.Client(readerConfig.Read);
-            services.AddSingleton(client);
-        }
-        
+            var telegramConfig = sp.GetService<IOptions<TelegramConfig>>();
+            var readTelegramConfig = new ReadTelegramConfig(telegramConfig?.Value);
+            return new Client(readTelegramConfig.Read);
+        });
     })
     .Build();
 
@@ -44,5 +46,3 @@ using IHost host = Host.CreateDefaultBuilder(args)
 Console.WriteLine($"Version: {fvi.FileVersion}");
 Console.WriteLine($"Starting the reading message from Telegram");
 await host.RunAsync();
-
-
