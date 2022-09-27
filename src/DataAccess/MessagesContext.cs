@@ -11,15 +11,19 @@ public class MessagesContext : DbContext
     
     public DbSet<Comment> Comments { get; set; }
 
-    private readonly string _connectionString;
-
+    public MessagesContext(DbContextOptions<MessagesContext> options)
+        : base(options)
+    {
+        Database?.EnsureDeleted();
+        Database?.EnsureCreated();
+    }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql(_connectionString)
+        optionsBuilder
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
 
-        //optionsBuilder.LogTo(log => _logger.Debug(log));
+        optionsBuilder.LogTo(log => Console.WriteLine(log));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,10 +33,5 @@ public class MessagesContext : DbContext
             .ApplyConfiguration(new MessageMap())
             .ApplyConfiguration(new CommentMap())
             .ConfigureDateTimeToUtc();
-    }
-
-    public MessagesContext(string connectionString)
-    {
-        _connectionString = connectionString;
     }
 }

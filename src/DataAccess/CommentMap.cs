@@ -11,6 +11,7 @@ public class CommentMap:IEntityTypeConfiguration<Comment>
         builder.ToTable("Comments");
         
         builder.HasKey(p => p.Id);
+        builder.Property(b => b.Id).ValueGeneratedOnAdd();
 
         builder.HasOne<Message>(p => p.Message)
             .WithMany(p => p.Comments)

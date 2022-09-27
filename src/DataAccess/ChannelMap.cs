@@ -10,5 +10,6 @@ public class ChannelMap : IEntityTypeConfiguration<Channel>
     {
         builder.ToTable("Channels");
         builder.HasKey(p => p.Id);
+        builder.Property(b => b.Id).ValueGeneratedOnAdd();
     }
 }

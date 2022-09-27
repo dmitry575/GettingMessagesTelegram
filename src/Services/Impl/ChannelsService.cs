@@ -25,10 +25,13 @@ public class ChannelsService : IChannelsService
             {
                 BaseId = baseId,
                 Author = author,
-                HashAccess = hashAccess
+                HashAccess = hashAccess,
+                DateCreated = DateTime.UtcNow,
+                MessagesCount = 0
             };
-            await _messagesContext.Channels
-                .AddAsync(channel);
+            
+            await _messagesContext.Channels.AddAsync(channel);
+            
             await _messagesContext.SaveChangesAsync();
         }
 

@@ -28,9 +28,14 @@ public class Message
     public DateTime DateCreated { get; set; }
     
     /// <summary>
-    /// How many peoople viewed message
+    /// How many people viewed message
     /// </summary>
     public long ViewCount { get; set; }
+    
+    /// <summary>
+    /// How many comments has message
+    /// </summary>
+    public int CommentCount { get; set; }
     
     /// <summary>
     /// Id of relation channel

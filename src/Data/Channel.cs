@@ -25,5 +25,15 @@ public sealed class Channel
     /// </summary>
     public long HashAccess { get; set; }
     
+    /// <summary>
+    /// Date create
+    /// </summary>
+    public DateTime DateCreated { get; set; }
+    
+    /// <summary>
+    /// Count of messages
+    /// </summary>
+    public long MessagesCount { get; set; }
+    
     public IEnumerable<Message> Messages { get; set; }
 }

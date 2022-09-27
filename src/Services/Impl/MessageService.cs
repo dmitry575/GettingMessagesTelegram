@@ -18,7 +18,17 @@ public class MessageService : IMessageService
         return _messagesContext
             .Messages
             .AsQueryable()
-            .Include(x=>x.Comments)
-            .FirstOrDefaultAsync(x => x.ChannelId==channelId && x.BaseId == baseId);
+            .Include(x => x.Comments)
+            .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.BaseId == baseId);
+    }
+
+    public async Task<int> ReplaceAsync(Message message, CancellationToken cancellationToken)
+    {
+        if (message.Id <= 0)
+        {
+            await _messagesContext.Messages.AddAsync(message);
+        }
+
+        return await _messagesContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -62,6 +62,8 @@ public class ReceiveService : IReceiveService
                 _logger.LogInformation($"reading messages from channel: {channel.Id}");
                 var lastDate = DateTime.MaxValue;
                 var needBreak = false;
+
+                // last date is ok or need finished to parsing messages
                 while (_maxDate < lastDate && !needBreak)
                 {
                     var messages =
@@ -78,13 +80,13 @@ public class ReceiveService : IReceiveService
 
                         var comments = await _clientTelegram.Messages_GetDiscussionMessage(peerChanel, message.ID);
                         // add or update comments
-                        await ProcessComments(messageData, comments);
+                        ProcessComments(messageData, comments);
 
-                        await _messageService.ReplaceAsync(messageData,cancellationToken);
-                        
+                        var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
+
                         lastDate = message.Date;
                         _logger.LogInformation(
-                            $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
+                            $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}, updates: {updates}");
                     }
                 }
 
@@ -94,7 +96,7 @@ public class ReceiveService : IReceiveService
                         $"parsing too many messages last date: {lastDate.ToString("yyyy.MM.dd")}, max date: {_maxDate.ToString("yyyy.MM.dd")}");
                 }
 
-                _logger.LogInformation("reading messages was finished from channel: {channel.Id}");
+                _logger.LogInformation($"reading messages was finished from channel: {channel.Id}");
             }
         }
         catch (Exception e)
@@ -107,10 +109,27 @@ public class ReceiveService : IReceiveService
     /// <summary>
     /// Processing comments for message
     /// </summary>
-    /// <param name="comments"></param>
-    private async Task ProcessComments(Messages_DiscussionMessage comments)
+    /// <param name="message">MEssage from our database with comments</param>
+    /// <param name="comments">Comments from telegram</param>
+    private void ProcessComments(Data.Message message, Messages_DiscussionMessage comments)
     {
-        throw new NotImplementedException();
+        foreach (var comment in comments.messages)
+        {
+            var c = message.Comments.FirstOrDefault(x => x.BaseId == comment.ID);
+            if (c is null)
+            {
+                c = (comment as Message)?.MapToComment();
+                if (c != null)
+                {
+                    message.Comments.Add(c);
+                }
+            }
+        }
+
+        if (message.Comments != null)
+        {
+            message.CommentCount = message.Comments.Count;
+        }
     }
 
     private async Task PrintAllChats()
@@ -137,11 +156,11 @@ public class ReceiveService : IReceiveService
     {
         if (message is Message m)
         {
-            var exists = false;
-            if (await MessageExists(channelId, m.ID, out var messageData))
+            var (exists, messageData) = await MessageExists(channelId, m.ID);
+            if (exists)
             {
                 _logger.LogInformation("found last exists message: " + m.ID + "\t" + m.message + "\t" + m.post_author);
-                exists = true;
+                messageData.ViewCount = m.views;
             }
             else
             {
@@ -149,6 +168,7 @@ public class ReceiveService : IReceiveService
                 messageData = m.Map();
                 messageData.ChannelId = channelId;
             }
+
             _logger.LogInformation(m.ID + "\t" + m.post_author);
 
             //var messageData = await SaveMessage(m);
@@ -174,20 +194,12 @@ public class ReceiveService : IReceiveService
         return (StatusProcess.Failed, null);
     }
 
-    private async Task<Data.Message> SaveMessage(Message message)
-    {
-        var data = new Data.Message
-        {
-        };
-        return data;
-    }
-
     /// <summary>
     /// If exists messages
     /// </summary>
-    private async Task<bool> MessageExists(long channelId, long messageId, out Data.Message message)
+    private async Task<(bool, Data.Message)> MessageExists(long channelId, long messageId)
     {
-        message = await _messageService.GetByBaseId(channelId, messageId);
-        return message is null;
+        var message = await _messageService.GetByBaseId(channelId, messageId);
+        return (message is null, message);
     }
 }
