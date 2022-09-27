@@ -1,6 +1,9 @@
 ﻿namespace GettingMessagesTelegram.Services;
 
-public class ICommentsService
+/// <summary>
+/// Work for comments
+/// </summary>
+public interface ICommentsService
 {
     
 }

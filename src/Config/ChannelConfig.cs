@@ -16,4 +16,10 @@ public class ChannelConfig
     /// Hash for access to channel
     /// </summary>
     public long HashAccess { get; set; }
+    
+    /// <summary>
+    /// User name
+    /// </summary>
+    public string Name { get; set; }
+    
 }

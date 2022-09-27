@@ -19,8 +19,10 @@ public static class ConfigureServices
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
 
         services.AddSingleton(configuration);
-        services.AddSingleton<IChannelsService, ChannelsService>();
+        services.AddSingleton<IReceiveService, ReceiveService>();
         services.AddSingleton<IReadTelegramConfig, ReadTelegramConfig>();
+        services.AddSingleton<IChannelsService, ChannelsService>();
+        services.AddSingleton<IMessageService, MessageService>();
         
         services.AddLogging(configure =>
         {

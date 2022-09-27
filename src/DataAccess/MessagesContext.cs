@@ -5,9 +5,11 @@ namespace GettingMessagesTelegram.DataAccess;
 
 public class MessagesContext : DbContext
 {
-    public DbSet<Channel> Channel { get; set; }
+    public DbSet<Channel> Channels { get; set; }
 
     public DbSet<Message> Messages { get; set; }
+    
+    public DbSet<Comment> Comments { get; set; }
 
     private readonly string _connectionString;
 
