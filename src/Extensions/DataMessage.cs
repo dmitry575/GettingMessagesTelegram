@@ -19,7 +19,7 @@ public static class DataMessage
             ViewCount = message.views
         };
     }
-    
+
     /// <summary>
     /// Mapping to comment
     /// </summary>
@@ -29,7 +29,7 @@ public static class DataMessage
         return new Data.Comment
         {
             BaseId = message.id,
-            Author = message.post_author,
+            Author = message.post_author ?? "user " + message.from_id?.ID,
             Content = message.message,
             DateCreated = message.Date
         };

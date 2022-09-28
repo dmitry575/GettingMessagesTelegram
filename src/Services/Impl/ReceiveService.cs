@@ -1,10 +1,13 @@
 ﻿using GettingMessagesTelegram.Config;
+using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Extensions;
 using GettingMessagesTelegram.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TL;
 using WTelegram;
+using Channel = TL.Channel;
+using Message = TL.Message;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -36,6 +39,11 @@ public class ReceiveService : IReceiveService
         Failed,
         Break
     }
+
+    /// <summary>
+    /// Max of rows in one requests for pagination
+    /// </summary>
+    private const int MaxRowsInRequest = 100;
 
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
         IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageService messageService)
@@ -78,9 +86,8 @@ public class ReceiveService : IReceiveService
                             needBreak = true;
                         }
 
-                        var comments = await _clientTelegram.Messages_GetDiscussionMessage(peerChanel, message.ID);
                         // add or update comments
-                        ProcessComments(messageData, comments);
+                        await ProcessComments(messageData, peerChanel, message.ID);
 
                         var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
@@ -110,26 +117,36 @@ public class ReceiveService : IReceiveService
     /// Processing comments for message
     /// </summary>
     /// <param name="message">MEssage from our database with comments</param>
-    /// <param name="comments">Comments from telegram</param>
-    private void ProcessComments(Data.Message message, Messages_DiscussionMessage comments)
+    /// <param name="channel">Data of channel</param>
+    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, int messageId)
     {
-        foreach (var comment in comments.messages)
+        message.Comments ??= new List<Comment>();
+
+        var page = 0;
+        while (true)
         {
-            var c = message.Comments.FirstOrDefault(x => x.BaseId == comment.ID);
-            if (c is null)
+            var comments =
+                await _clientTelegram.Messages_GetReplies(peerChanel, messageId, limit: MaxRowsInRequest,
+                    offset_id: page);
+
+            foreach (var comment in comments.Messages)
             {
-                c = (comment as Message)?.MapToComment();
-                if (c != null)
+                var c = message.Comments?.FirstOrDefault(x => x.BaseId == comment.ID);
+                if (c is null)
                 {
-                    message.Comments.Add(c);
+                    c = (comment as Message)?.MapToComment();
+                    if (c != null)
+                    {
+                        message.Comments.Add(c);
+                    }
                 }
             }
+
+            if (comments.Messages.Length < MaxRowsInRequest)
+                break;
         }
 
-        if (message.Comments != null)
-        {
-            message.CommentCount = message.Comments.Count;
-        }
+        message.CommentCount = message.Comments.Count;
     }
 
     private async Task PrintAllChats()
@@ -152,6 +169,13 @@ public class ReceiveService : IReceiveService
             }
     }
 
+    /// <summary>
+    /// Processing message from telegram
+    /// Check exists in database and add if need
+    /// </summary>
+    /// <param name="channelId"></param>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private async Task<(StatusProcess, Data.Message)> ProcessMessage(long channelId, MessageBase message)
     {
         if (message is Message m)
@@ -200,6 +224,6 @@ public class ReceiveService : IReceiveService
     private async Task<(bool, Data.Message)> MessageExists(long channelId, long messageId)
     {
         var message = await _messageService.GetByBaseId(channelId, messageId);
-        return (message is null, message);
+        return (message is not null, message);
     }
 }
