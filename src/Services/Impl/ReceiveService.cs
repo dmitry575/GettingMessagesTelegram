@@ -43,7 +43,7 @@ public class ReceiveService : IReceiveService
     /// <summary>
     /// Max of rows in one requests for pagination
     /// </summary>
-    private const int MaxRowsInRequest = 100;
+    private const int MaxRowsInRequest = 30;
 
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
         IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageService messageService)
@@ -70,30 +70,48 @@ public class ReceiveService : IReceiveService
                 _logger.LogInformation($"reading messages from channel: {channel.Id}");
                 var lastDate = DateTime.MaxValue;
                 var needBreak = false;
-
+                var page = 0;
+                
                 // last date is ok or need finished to parsing messages
                 while (_maxDate < lastDate && !needBreak)
                 {
-                    var messages =
-                        await _clientTelegram.Messages_GetHistory(peerChanel, offset_date: lastDate, limit: 100);
-                    foreach (var message in messages.Messages)
+                    try
                     {
-                        _logger.LogInformation($"new message: {message.ID} - start");
-                        var (status, messageData) = await ProcessMessage(channelSql.Id, message);
-                        if (status == StatusProcess.Break)
+                        var messages =
+                            await _clientTelegram.Messages_GetHistory(peerChanel, add_offset: page,
+                                limit: MaxRowsInRequest);
+                        foreach (var message in messages.Messages)
                         {
-                            // set flag what this last circkle
-                            needBreak = true;
+                            _logger.LogInformation($"new message: {message.ID} - start");
+                            var (status, messageData) = await ProcessMessage(channelSql.Id, message);
+                            if (status == StatusProcess.Break)
+                            {
+                                // set flag what this last circkle
+                                needBreak = true;
+                            }
+
+                            // add or update comments
+                            await ProcessComments(messageData, peerChanel, message.ID);
+
+                            var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
+
+                            lastDate = message.Date;
+                            _logger.LogInformation(
+                                $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}, updates: {updates}");
                         }
 
-                        // add or update comments
-                        await ProcessComments(messageData, peerChanel, message.ID);
+                        if (messages.Messages?.Length < MaxRowsInRequest)
+                        {
+                            _logger.LogInformation(
+                                $"get lower than need messages {messages.Messages.Length} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
+                            break;
+                        }
 
-                        var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
-
-                        lastDate = message.Date;
-                        _logger.LogInformation(
-                            $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}, updates: {updates}");
+                        page += MaxRowsInRequest;
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"error get messages and processing their: {channel.Id}, page: {page}, {e}");
                     }
                 }
 
@@ -117,33 +135,43 @@ public class ReceiveService : IReceiveService
     /// Processing comments for message
     /// </summary>
     /// <param name="message">MEssage from our database with comments</param>
-    /// <param name="channel">Data of channel</param>
-    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, int messageId)
+    /// <param name="peerChanel">Data of channel</param>
+    /// <param name="telegramMessageId">Telegram message id</param>
+    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, int telegramMessageId)
     {
         message.Comments ??= new List<Comment>();
 
         var page = 0;
         while (true)
         {
-            var comments =
-                await _clientTelegram.Messages_GetReplies(peerChanel, messageId, limit: MaxRowsInRequest,
-                    offset_id: page);
-
-            foreach (var comment in comments.Messages)
+            try
             {
-                var c = message.Comments?.FirstOrDefault(x => x.BaseId == comment.ID);
-                if (c is null)
+                var comments =
+                    await _clientTelegram.Messages_GetReplies(peerChanel, telegramMessageId, limit: MaxRowsInRequest,
+                        add_offset: page);
+
+                foreach (var comment in comments.Messages)
                 {
-                    c = (comment as Message)?.MapToComment();
-                    if (c != null)
+                    var c = message.Comments?.FirstOrDefault(x => x.BaseId == comment.ID);
+                    if (c is null)
                     {
-                        message.Comments.Add(c);
+                        c = (comment as Message)?.MapToComment();
+                        if (c != null)
+                        {
+                            message.Comments.Add(c);
+                        }
                     }
                 }
-            }
 
-            if (comments.Messages.Length < MaxRowsInRequest)
-                break;
+
+                if (comments.Messages.Length < MaxRowsInRequest)
+                    break;
+                page += MaxRowsInRequest;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("get comments for message: {messageId} failed, page: {page}, {e}");
+            }
         }
 
         message.CommentCount = message.Comments.Count;
