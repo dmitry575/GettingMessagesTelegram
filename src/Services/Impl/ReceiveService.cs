@@ -137,7 +137,7 @@ public class ReceiveService : IReceiveService
     /// <param name="message">MEssage from our database with comments</param>
     /// <param name="peerChanel">Data of channel</param>
     /// <param name="telegramMessageId">Telegram message id</param>
-    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, int telegramMessageId)
+    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, Int32 telegramMessageId)
     {
         message.Comments ??= new List<Comment>();
 
@@ -168,9 +168,15 @@ public class ReceiveService : IReceiveService
                     break;
                 page += MaxRowsInRequest;
             }
+            catch (RpcException e)
+            {
+                _logger.LogError($"get comments for message: {telegramMessageId} failed, page: {page}, code: {e.Code}, {e}");
+                break;
+            }
             catch (Exception e)
             {
-                _logger.LogError("get comments for message: {messageId} failed, page: {page}, {e}");
+                _logger.LogError($"get comments for message: {telegramMessageId} failed, page: {page}, {e}");
+                break;
             }
         }
 
