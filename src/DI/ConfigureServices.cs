@@ -1,6 +1,8 @@
 ﻿using System.Configuration;
 using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
+using GettingMessagesTelegram.Process;
+using GettingMessagesTelegram.Process.Impl;
 using GettingMessagesTelegram.Services;
 using GettingMessagesTelegram.Services.Impl;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,9 @@ public static class ConfigureServices
         services.AddSingleton<IReadTelegramConfig, ReadTelegramConfig>();
         services.AddSingleton<IChannelsService, ChannelsService>();
         services.AddSingleton<IMessageService, MessageService>();
+        services.AddSingleton<IMessageProcess, MessageProcess>();
+        services.AddSingleton<IMediaService, MediaService>();
+        
         
         services.AddLogging(configure =>
         {

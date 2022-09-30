@@ -33,7 +33,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddHostedService<Worker>();
 
-        services.AddTransient(sp =>
+        services.AddSingleton(sp =>
         {
             var telegramConfig = sp.GetService<IOptions<TelegramConfig>>();
             var readTelegramConfig = new ReadTelegramConfig(telegramConfig?.Value);

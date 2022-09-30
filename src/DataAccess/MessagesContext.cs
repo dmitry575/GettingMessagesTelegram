@@ -10,6 +10,8 @@ public class MessagesContext : DbContext
     public DbSet<Message> Messages { get; set; }
     
     public DbSet<Comment> Comments { get; set; }
+    
+    public DbSet<Media> Medias { get; set; }
 
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)
@@ -32,6 +34,7 @@ public class MessagesContext : DbContext
             .ApplyConfiguration(new ChannelMap())
             .ApplyConfiguration(new MessageMap())
             .ApplyConfiguration(new CommentMap())
+            .ApplyConfiguration(new MediaMap())
             .ConfigureDateTimeToUtc();
     }
 }

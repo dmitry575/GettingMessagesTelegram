@@ -26,7 +26,7 @@ public class MessageService : IMessageService
     {
         if (message.Id <= 0)
         {
-            await _messagesContext.Messages.AddAsync(message);
+            await _messagesContext.Messages.AddAsync(message, cancellationToken);
         }
 
         return await _messagesContext.SaveChangesAsync(cancellationToken);

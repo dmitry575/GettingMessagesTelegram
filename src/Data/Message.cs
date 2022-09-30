@@ -1,4 +1,6 @@
-﻿namespace GettingMessagesTelegram.Data;
+﻿using GettingMessagesTelegram.DataAccess;
+
+namespace GettingMessagesTelegram.Data;
 
 public class Message
 {
@@ -45,4 +47,6 @@ public class Message
     public virtual Channel Channel { get; set; }
     
     public virtual ICollection<Comment> Comments { get; set; }
+    
+    public virtual ICollection<Media> Medias { get; set; }
 }

@@ -1,7 +1,8 @@
 ﻿using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.Data;
+using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Extensions;
-using GettingMessagesTelegram.Helpers;
+using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TL;
@@ -31,14 +32,8 @@ public class ReceiveService : IReceiveService
     private readonly DateTime _maxDate;
 
     private readonly IChannelsService _channelsService;
-    private readonly IMessageService _messageService;
 
-    private enum StatusProcess
-    {
-        Ok,
-        Failed,
-        Break
-    }
+    private readonly IMessageProcess _messageProcess;
 
     /// <summary>
     /// Max of rows in one requests for pagination
@@ -46,12 +41,12 @@ public class ReceiveService : IReceiveService
     private const int MaxRowsInRequest = 30;
 
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
-        IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageService messageService)
+        IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageProcess messageProcess)
     {
         _clientTelegram = clientTelegram;
         _logger = logger;
         _channelsService = channelsService;
-        _messageService = messageService;
+        _messageProcess = messageProcess;
         _channelsConfig = channelsConfig.Value;
         _maxDate = DateTime.UtcNow.AddYears(-1);
     }
@@ -71,7 +66,7 @@ public class ReceiveService : IReceiveService
                 var lastDate = DateTime.MaxValue;
                 var needBreak = false;
                 var page = 0;
-                
+
                 // last date is ok or need finished to parsing messages
                 while (_maxDate < lastDate && !needBreak)
                 {
@@ -83,21 +78,18 @@ public class ReceiveService : IReceiveService
                         foreach (var message in messages.Messages)
                         {
                             _logger.LogInformation($"new message: {message.ID} - start");
-                            var (status, messageData) = await ProcessMessage(channelSql.Id, message);
+
+                            var (status, _) = await _messageProcess.Processing(channelSql, message, cancellationToken);
                             if (status == StatusProcess.Break)
                             {
                                 // set flag what this last circkle
                                 needBreak = true;
                             }
 
-                            // add or update comments
-                            await ProcessComments(messageData, peerChanel, message.ID);
-
-                            var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
-
                             lastDate = message.Date;
+
                             _logger.LogInformation(
-                                $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}, updates: {updates}");
+                                $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
                         }
 
                         if (messages.Messages?.Length < MaxRowsInRequest)
@@ -131,57 +123,6 @@ public class ReceiveService : IReceiveService
         }
     }
 
-    /// <summary>
-    /// Processing comments for message
-    /// </summary>
-    /// <param name="message">MEssage from our database with comments</param>
-    /// <param name="peerChanel">Data of channel</param>
-    /// <param name="telegramMessageId">Telegram message id</param>
-    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, Int32 telegramMessageId)
-    {
-        message.Comments ??= new List<Comment>();
-
-        var page = 0;
-        while (true)
-        {
-            try
-            {
-                var comments =
-                    await _clientTelegram.Messages_GetReplies(peerChanel, telegramMessageId, limit: MaxRowsInRequest,
-                        add_offset: page);
-
-                foreach (var comment in comments.Messages)
-                {
-                    var c = message.Comments?.FirstOrDefault(x => x.BaseId == comment.ID);
-                    if (c is null)
-                    {
-                        c = (comment as Message)?.MapToComment();
-                        if (c != null)
-                        {
-                            message.Comments.Add(c);
-                        }
-                    }
-                }
-
-
-                if (comments.Messages.Length < MaxRowsInRequest)
-                    break;
-                page += MaxRowsInRequest;
-            }
-            catch (RpcException e)
-            {
-                _logger.LogError($"get comments for message: {telegramMessageId} failed, page: {page}, code: {e.Code}, {e}");
-                break;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"get comments for message: {telegramMessageId} failed, page: {page}, {e}");
-                break;
-            }
-        }
-
-        message.CommentCount = message.Comments.Count;
-    }
 
     private async Task PrintAllChats()
     {
@@ -201,63 +142,5 @@ public class ReceiveService : IReceiveService
                     Console.WriteLine($"{id}: Channel {channel.username}: {channel.title}, {channel.access_hash}");
                     break;
             }
-    }
-
-    /// <summary>
-    /// Processing message from telegram
-    /// Check exists in database and add if need
-    /// </summary>
-    /// <param name="channelId"></param>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    private async Task<(StatusProcess, Data.Message)> ProcessMessage(long channelId, MessageBase message)
-    {
-        if (message is Message m)
-        {
-            var (exists, messageData) = await MessageExists(channelId, m.ID);
-            if (exists)
-            {
-                _logger.LogInformation("found last exists message: " + m.ID + "\t" + m.message + "\t" + m.post_author);
-                messageData.ViewCount = m.views;
-            }
-            else
-            {
-                // create a new message to database
-                messageData = m.Map();
-                messageData.ChannelId = channelId;
-            }
-
-            _logger.LogInformation(m.ID + "\t" + m.post_author);
-
-            //var messageData = await SaveMessage(m);
-
-            var link = UrlHelper.GetTmeUrl(m.message);
-            if (!string.IsNullOrEmpty(link))
-            {
-                _logger.LogInformation($"found the link {link} in the message {m.ID}");
-                // var linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(link);
-                // _logger.LogInformation(linkInfo?.message);
-                // var path = link.Replace("https://t.me/", "");
-                // linkInfo = await _clientTelegram.Help_GetDeepLinkInfo(path);
-                // _logger.LogInformation(linkInfo?.message);
-                // var ll = await _clientTelegram.Help_GetRecentMeUrls(link);
-                // //_logger.LogInformation(ll?.urls.Length);
-                // //_clientTelegram.Get
-                // _clientTelegram.GetFullChat(new InputPeerChannel())
-            }
-
-            return (exists ? StatusProcess.Break : StatusProcess.Ok, messageData);
-        }
-
-        return (StatusProcess.Failed, null);
-    }
-
-    /// <summary>
-    /// If exists messages
-    /// </summary>
-    private async Task<(bool, Data.Message)> MessageExists(long channelId, long messageId)
-    {
-        var message = await _messageService.GetByBaseId(channelId, messageId);
-        return (message is not null, message);
     }
 }

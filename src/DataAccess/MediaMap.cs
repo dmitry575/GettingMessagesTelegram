@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GettingMessagesTelegram.DataAccess;
 
-public class MessageMap : IEntityTypeConfiguration<Message>
+public class MediaMap: IEntityTypeConfiguration<Media>
 {
-    public void Configure(EntityTypeBuilder<Message> builder)
+    public void Configure(EntityTypeBuilder<Media> builder)
     {
-        builder.ToTable("Messages");
+        builder.ToTable("Medias");
         builder.HasKey(p => p.Id);
         builder.Property(b => b.Id).ValueGeneratedOnAdd();
         
-        builder.HasOne<Channel>(p => p.Channel)
-            .WithMany(p => p.Messages)
-            .HasForeignKey(x => x.ChannelId);
+        builder.HasOne<Message>(p => p.Message)
+            .WithMany(p => p.Medias)
+            .HasForeignKey(x => x.MessageId);
     }
 }
