@@ -16,8 +16,7 @@ public class MessagesContext : DbContext
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)
     {
-        Database?.EnsureDeleted();
-        Database?.EnsureCreated();
+         
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

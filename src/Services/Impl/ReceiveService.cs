@@ -90,6 +90,8 @@ public class ReceiveService : IReceiveService
 
                             _logger.LogInformation(
                                 $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
+                            
+                            Thread.Sleep(2500);
                         }
 
                         if (messages.Messages?.Length < MaxRowsInRequest)
