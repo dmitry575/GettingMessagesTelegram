@@ -38,7 +38,9 @@ CREATE TABLE IF NOT EXISTS public."Medias"
 "BaseId" bigint NOT NULL,
 "HashAccess" bigint NOT NULL,
 "MessageId" bigint NOT NULL,
-"Type" int NOT NULL
+"Type" int NOT NULL,
+"Url" varchar(255) NULL,
+"Description" varchar(255) NULL
 );
 
 CREATE SEQUENCE channels_id_seq

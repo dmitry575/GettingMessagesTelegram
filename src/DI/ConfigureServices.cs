@@ -1,6 +1,8 @@
 ﻿using System.Configuration;
 using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
+using GettingMessagesTelegram.Media;
+using GettingMessagesTelegram.Media.Impl;
 using GettingMessagesTelegram.Process;
 using GettingMessagesTelegram.Process.Impl;
 using GettingMessagesTelegram.Services;
@@ -27,8 +29,9 @@ public static class ConfigureServices
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IMessageProcess, MessageProcess>();
         services.AddSingleton<IMediaService, MediaService>();
-        
-        
+        services.AddSingleton<IMediaCreator, MediaCreator>();
+
+
         services.AddLogging(configure =>
         {
             configure.SetMinimumLevel(LogLevel.Trace);
@@ -37,7 +40,7 @@ public static class ConfigureServices
         });
 
         services.AddLogging();
-        
+
         services.Configure<TelegramConfig>(configuration.GetSection("Telegram"));
         services.Configure<ChannelsConfig>(configuration.GetSection("Channels"));
         //services.Configure<ChannelsConfig>(options => configuration.GetSection("Channels").Bind(options));

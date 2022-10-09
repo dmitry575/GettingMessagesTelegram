@@ -85,12 +85,11 @@ public class ReceiveService : IReceiveService
                                 // set flag what this last circkle
                                 needBreak = true;
                             }
-
-                            lastDate = message.Date;
-
-                            _logger.LogInformation(
-                                $"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
-                            
+                            if (message != null)
+                            {
+                                lastDate = message.Date;
+                                _logger.LogInformation($"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
+                            }
                             Thread.Sleep(2500);
                         }
 

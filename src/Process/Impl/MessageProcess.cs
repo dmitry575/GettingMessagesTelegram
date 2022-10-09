@@ -2,6 +2,7 @@
 using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Extensions;
 using GettingMessagesTelegram.Helpers;
+using GettingMessagesTelegram.Media;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
 using TL;
@@ -14,6 +15,7 @@ public class MessageProcess : IMessageProcess
 {
     private readonly ILogger<MessageProcess> _logger;
     private readonly IMessageService _messageService;
+    private readonly IMediaService _mediaService;
 
     /// <summary>
     /// Max of rows in one requests for pagination
@@ -25,52 +27,73 @@ public class MessageProcess : IMessageProcess
     /// </summary>
     private readonly Client _clientTelegram;
 
-    public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram)
+    private readonly IMediaCreator _mediaCreator;
+
+    public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram, IMediaService mediaService)
     {
         _messageService = messageService;
         _logger = logger;
         _clientTelegram = clientTelegram;
+        _mediaService = mediaService;
     }
 
     public async Task<(StatusProcess, Message)> Processing(Data.Channel channel, MessageBase message,
         CancellationToken cancellationToken = default)
     {
         var (status, messageData) = await WorkMessage(channel.Id, message);
-        if (status == StatusProcess.Break)
+        switch (status)
         {
-            // set flag what this last circkle
-            return (status, messageData);
+            case StatusProcess.Break:
+                // set flag what this last circkle
+                return (status, messageData);
+
+            case StatusProcess.Failed:
+                return (status, messageData);
         }
 
         var peerChanel = new InputPeerChannel(channel.BaseId, channel.HashAccess);
+
         // add or update comments
         await ProcessComments(messageData, peerChanel, message.ID);
 
+        ProccessMedias(messageData, message);
+
         var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
-        if (message is TL.Message m)
-        {
-            if (m.media != null)
-            {
-                if ((m.flags & TL.Message.Flags.has_media) != 0)
-                {
-                    
-                }
-                
-            }
-        }
-        
+
         _logger.LogInformation(
             $"updated message channel id: {channel.BaseId}, message id: {message.ID}, updated: {updates}");
 
         return (StatusProcess.Ok, messageData);
     }
 
+    private void ProccessMedias(Message messageData, MessageBase message)
+    {
+        if (message is TL.Message m)
+        {
+            if (m.media != null)
+            {
+                if ((m.flags & TL.Message.Flags.has_media) != 0)
+                {
+                    _logger.LogInformation($"{m.media.GetType()}");
+
+                    // create data from message
+                    var media = _mediaCreator.Create(messageData.Id, m.media);
+                    if (media != null)
+                    {
+                        messageData.Medias ??= new List<DataAccess.Media>();
+                        messageData.Medias.Add(media);
+                    }
+                }
+            }
+        }
+    }
+
     private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, MessageBase message)
     {
         if (message is not TL.Message m)
         {
-            _logger.LogWarning("message telegram has not ");
+            _logger.LogWarning($"message telegram has not message, type {message?.GetType()}");
             return (StatusProcess.Failed, null);
         }
 
@@ -115,7 +138,7 @@ public class MessageProcess : IMessageProcess
     /// <param name="message">MEssage from our database with comments</param>
     /// <param name="peerChanel">Data of channel</param>
     /// <param name="telegramMessageId">Telegram message id</param>
-    private async Task ProcessComments(Data.Message message, InputPeerChannel peerChanel, Int32 telegramMessageId)
+    private async Task ProcessComments(Message message, InputPeerChannel peerChanel, int telegramMessageId)
     {
         message.Comments ??= new List<Comment>();
 

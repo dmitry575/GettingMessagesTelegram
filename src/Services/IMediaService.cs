@@ -8,5 +8,5 @@ public interface IMediaService
     /// Create or update media data of message
     /// </summary>
     /// <param name="media">Information of photo or video</param>
-    Task UpdateOrCreate(Media media);
+    Task UpdateOrCreate(DataAccess.Media media);
 }

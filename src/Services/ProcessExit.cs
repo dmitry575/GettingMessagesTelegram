@@ -11,7 +11,7 @@ public class Processes
 
     public void ProcessExit(object sender, EventArgs e)
     {
-        Console.WriteLine("exit");
+        Console.WriteLine("exit from program");
         _cancellationTokenSource.Cancel();
     }
 }

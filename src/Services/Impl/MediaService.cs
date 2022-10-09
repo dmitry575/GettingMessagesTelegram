@@ -12,7 +12,7 @@ public class MediaService : IMediaService
         _messagesContext = messagesContext;
     }
 
-    public async Task UpdateOrCreate(Media media)
+    public async Task UpdateOrCreate(DataAccess.Media media)
     {
         var m = await _messagesContext
             .Medias

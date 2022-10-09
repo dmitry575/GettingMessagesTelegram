@@ -48,5 +48,5 @@ public class Message
     
     public virtual ICollection<Comment> Comments { get; set; }
     
-    public virtual ICollection<Media> Medias { get; set; }
+    public virtual ICollection<DataAccess.Media> Medias { get; set; }
 }

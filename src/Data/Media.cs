@@ -24,11 +24,22 @@ public class Media
     /// Hash of access
     /// </summary>
     public long HashAccess { get; set; }
-    
+
+    /// <summary>
+    /// Description
+    /// </summary>
+    public string Description{ get; set; }
+
+    /// <summary>
+    /// Url
+    /// </summary>
+    public string Url { get; set; }
+
     /// <summary>
     /// Hash of access
     /// </summary>
     public MediaType Type { get; set; }
     
     public virtual Message Message { get; set; }
+    public MediaType MediaType { get; internal set; }
 }
