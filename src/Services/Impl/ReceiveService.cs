@@ -83,8 +83,6 @@ public class ReceiveService : IReceiveService
                                 needBreak = true;
                             }
 
-                            await _downloadService.DownloadAsync(data);
-                            _clientTelegram.DownloadFileAsync()
                             if (message != null)
                             {
                                 lastDate = message.Date;

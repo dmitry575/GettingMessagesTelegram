@@ -55,5 +55,15 @@ public class Media
     /// </summary>
     public long FileSize { get; set; }
     
+    /// <summary>
+    /// Url on external web service for viewing users
+    /// </summary>
+    public string UrlExternal { get; set; }
+    
+    /// <summary>
+    /// Local path where downloaded file
+    /// </summary>
+    public string LocalPath { get; set; }
+
     public virtual Message Message { get; set; }
 }

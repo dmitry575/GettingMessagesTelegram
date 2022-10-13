@@ -43,6 +43,7 @@ public static class ConfigureServices
 
         services.Configure<TelegramConfig>(configuration.GetSection("Telegram"));
         services.Configure<ChannelsConfig>(configuration.GetSection("Channels"));
+        services.Configure<DownloadConfig>(configuration.GetSection("Download"));
         //services.Configure<ChannelsConfig>(options => configuration.GetSection("Channels").Bind(options));
         return services;
     }

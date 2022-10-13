@@ -1,10 +1,12 @@
-﻿using GettingMessagesTelegram.Data;
+﻿using GettingMessagesTelegram.Config;
+using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Extensions;
 using GettingMessagesTelegram.Helpers;
 using GettingMessagesTelegram.Media;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TL;
 using WTelegram;
 using Message = GettingMessagesTelegram.Data.Message;
@@ -29,14 +31,18 @@ public class MessageProcess : IMessageProcess
 
     private readonly IMediaCreator _mediaCreator;
 
+    private DownloadConfig _downloadConfig;
+
+
     public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram,
-        IMediaService mediaService, IMediaCreator mediaCreator)
+        IMediaService mediaService, IMediaCreator mediaCreator, IOptions<DownloadConfig> downloadConfig)
     {
         _messageService = messageService;
         _logger = logger;
         _clientTelegram = clientTelegram;
         _mediaService = mediaService;
         _mediaCreator = mediaCreator;
+        _downloadConfig = downloadConfig.Value;
     }
 
     public async Task<(StatusProcess, Message)> Processing(Data.Channel channel, MessageBase message,
@@ -54,7 +60,7 @@ public class MessageProcess : IMessageProcess
         // add or update comments
         await ProcessComments(messageData, peerChanel, message.ID);
 
-        ProccessMedias(messageData, message);
+       await ProcessMedias(messageData, message);
 
         var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
@@ -64,26 +70,73 @@ public class MessageProcess : IMessageProcess
         return (status, messageData);
     }
 
-    private void ProccessMedias(Message messageData, MessageBase message)
+    private async Task ProcessMedias(Message messageData, MessageBase message)
     {
-        if (message is TL.Message m)
+        if (message is TL.Message { media: { } } m)
         {
-            if (m.media != null)
+            if ((m.flags & TL.Message.Flags.has_media) != 0)
             {
-                if ((m.flags & TL.Message.Flags.has_media) != 0)
-                {
-                    _logger.LogInformation($"{m.media.GetType()}");
+                _logger.LogInformation($"{m.media.GetType()}");
 
-                    // create data from message
-                    var media = _mediaCreator.Create(messageData.Id, m.media);
-                    if (media != null)
-                    {
-                        messageData.Medias ??= new List<DataAccess.Media>();
-                        messageData.Medias.Add(media);
-                    }
+                // create data from message
+                var media = _mediaCreator.Create(messageData.Id, m.media);
+                if (media != null)
+                {
+                    messageData.Medias ??= new List<DataAccess.Media>();
+                    media.LocalPath = await DownloadFile(m.media);
+
+                    messageData.Medias.Add(media);
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Download media to the file
+    /// </summary>
+    /// <param name="media"></param>
+    private async Task<string> DownloadFile(MessageMedia media)
+    {
+        if (!Directory.Exists(_downloadConfig.LocalPath))
+        {
+            Directory.CreateDirectory(_downloadConfig.LocalPath);
+            _logger.LogInformation($"directory created: {_downloadConfig.LocalPath}");
+        }
+        
+        if (media is MessageMediaDocument { document: Document document })
+        {
+            var filename = Path.Combine(_downloadConfig.LocalPath, document.ID.ToString());
+            _logger.LogInformation($"starting download video file {document.ID} to {filename}");
+            try
+            {
+                await using var fileStream = File.Create(filename);
+                await _clientTelegram.DownloadFileAsync(document, fileStream);
+                _logger.LogInformation($"downloaded video file {document.ID} to {filename}");
+                return filename;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"downloading file failed: id {document.ID}, {filename}, {e}");
+            }
+        }
+        else if (media is MessageMediaPhoto { photo: Photo photo })
+        {
+            var filename = Path.Combine(_downloadConfig.LocalPath, photo.ID.ToString());
+            _logger.LogInformation($"starting download photo file {photo.ID} to {filename}");
+            try
+            {
+                await using var fileStream = File.Create(filename);
+                await _clientTelegram.DownloadFileAsync(photo, fileStream);
+                _logger.LogInformation($"downloaded photo file {photo.ID} to {filename}");
+                return filename;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"downloading photo file failed: id {photo.ID}, {filename}, {e}");
+            }
+        }
+
+        return string.Empty;
     }
 
     private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, MessageBase message)
