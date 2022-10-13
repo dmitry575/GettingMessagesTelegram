@@ -29,12 +29,14 @@ public class MessageProcess : IMessageProcess
 
     private readonly IMediaCreator _mediaCreator;
 
-    public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram, IMediaService mediaService)
+    public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram,
+        IMediaService mediaService, IMediaCreator mediaCreator)
     {
         _messageService = messageService;
         _logger = logger;
         _clientTelegram = clientTelegram;
         _mediaService = mediaService;
+        _mediaCreator = mediaCreator;
     }
 
     public async Task<(StatusProcess, Message)> Processing(Data.Channel channel, MessageBase message,
@@ -43,10 +45,6 @@ public class MessageProcess : IMessageProcess
         var (status, messageData) = await WorkMessage(channel.Id, message);
         switch (status)
         {
-            case StatusProcess.Break:
-                // set flag what this last circkle
-                return (status, messageData);
-
             case StatusProcess.Failed:
                 return (status, messageData);
         }
@@ -60,11 +58,10 @@ public class MessageProcess : IMessageProcess
 
         var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
-
         _logger.LogInformation(
             $"updated message channel id: {channel.BaseId}, message id: {message.ID}, updated: {updates}");
 
-        return (StatusProcess.Ok, messageData);
+        return (status, messageData);
     }
 
     private void ProccessMedias(Message messageData, MessageBase message)

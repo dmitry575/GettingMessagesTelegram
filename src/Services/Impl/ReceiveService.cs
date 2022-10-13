@@ -1,14 +1,11 @@
 ﻿using GettingMessagesTelegram.Config;
-using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Enums;
-using GettingMessagesTelegram.Extensions;
 using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TL;
 using WTelegram;
 using Channel = TL.Channel;
-using Message = TL.Message;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -79,12 +76,15 @@ public class ReceiveService : IReceiveService
                         {
                             _logger.LogInformation($"new message: {message.ID} - start");
 
-                            var (status, _) = await _messageProcess.Processing(channelSql, message, cancellationToken);
+                            var (status, data) = await _messageProcess.Processing(channelSql, message, cancellationToken);
                             if (status == StatusProcess.Break)
                             {
                                 // set flag what this last circkle
                                 needBreak = true;
                             }
+
+                            await _downloadService.DownloadAsync(data);
+                            _clientTelegram.DownloadFileAsync()
                             if (message != null)
                             {
                                 lastDate = message.Date;

@@ -40,7 +40,12 @@ CREATE TABLE IF NOT EXISTS public."Medias"
 "MessageId" bigint NOT NULL,
 "Type" int NOT NULL,
 "Url" varchar(255) NULL,
-"Description" varchar(255) NULL
+"Description" varchar(255) NULL,
+"MimeType" varchar(55) NULL,
+"FileSize" bigint NULL,
+"FileName" varchar(255) NULL,
+"LocalPath" varchar(255) NULL,
+"UrlDownload" varchar(255) NULL
 );
 
 CREATE SEQUENCE channels_id_seq

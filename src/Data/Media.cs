@@ -40,6 +40,20 @@ public class Media
     /// </summary>
     public MediaType Type { get; set; }
     
+    /// <summary>
+    /// Type of file
+    /// </summary>
+    public string MimeType { get; set; }
+    
+    /// <summary>
+    /// File name
+    /// </summary>
+    public string FileName { get; set; }
+    
+    /// <summary>
+    /// File size
+    /// </summary>
+    public long FileSize { get; set; }
+    
     public virtual Message Message { get; set; }
-    public MediaType MediaType { get; internal set; }
 }
