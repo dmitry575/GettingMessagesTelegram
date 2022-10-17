@@ -1,0 +1,24 @@
+2022-09-26 22:06:56,545 INFO  (null) Lifetime - Application started. Press Ctrl+C to shut down. 
+2022-09-26 22:06:56,586 INFO  (null) Lifetime - Hosting environment: Production 
+2022-09-26 22:06:56,590 INFO  (null) Lifetime - Content root path: K:\source\repos\GettingMessagesTelegram\src\bin\Debug\net6.0 
+2022-09-26 22:06:56,999 INFO  (null) ChannelsService - Loggin by: Dmitry 
+2022-09-26 22:06:57,001 INFO  (null) ChannelsService - reading messages from channel: 1101806611 
+2022-09-26 22:06:57,486 INFO  (null) ChannelsService - 65194	Boris Rozhin 
+2022-09-26 22:13:51,846 INFO  (null) Lifetime - Application is shutting down... 
+2022-09-26 22:13:51,860 INFO  (null) Worker - Application finished 
+2022-09-26 22:41:32,024 INFO  (null) Lifetime - Application started. Press Ctrl+C to shut down. 
+2022-09-26 22:41:32,057 INFO  (null) Lifetime - Hosting environment: Production 
+2022-09-26 22:41:32,058 INFO  (null) Lifetime - Content root path: K:\source\repos\GettingMessagesTelegram\src\bin\Debug\net6.0 
+2022-09-26 22:41:32,430 INFO  (null) ChannelsService - Loggin by: Dmitry 
+2022-09-26 22:41:39,331 INFO  (null) ChannelsService - reading messages from channel: 1101806611 
+2022-09-26 22:42:01,181 INFO  (null) Lifetime - Application started. Press Ctrl+C to shut down. 
+2022-09-26 22:42:01,214 INFO  (null) Lifetime - Hosting environment: Production 
+2022-09-26 22:42:01,217 INFO  (null) Lifetime - Content root path: K:\source\repos\GettingMessagesTelegram\src\bin\Debug\net6.0 
+2022-09-26 22:42:01,599 INFO  (null) ChannelsService - Loggin by: Dmitry 
+2022-09-26 22:42:04,505 INFO  (null) ChannelsService - reading messages from channel: 1101806611 
+2022-09-26 22:56:23,357 INFO  (null) Lifetime - Application started. Press Ctrl+C to shut down. 
+2022-09-26 22:56:23,391 INFO  (null) Lifetime - Hosting environment: Production 
+2022-09-26 22:56:23,393 INFO  (null) Lifetime - Content root path: K:\source\repos\GettingMessagesTelegram\src\bin\Debug\net6.0 
+2022-09-26 22:56:23,746 INFO  (null) ChannelsService - Loggin by: Dmitry 
+2022-09-26 22:57:22,477 INFO  (null) ChannelsService - reading messages from channel: 1101806611 
+2022-09-26 22:57:33,580 INFO  (null) ChannelsService - new message: 65196 - start 
