@@ -4,3 +4,5 @@ src/obj/
 src/.idea/
 src/.run/
 .vs/
+WTelegram.session
+publish/

@@ -60,7 +60,13 @@ public class MessageProcess : IMessageProcess
         // add or update comments
         await ProcessComments(messageData, peerChanel, message.ID);
 
-       await ProcessMedias(messageData, message);
+        await ProcessMedias(messageData, message);
+
+        if (string.IsNullOrEmpty(messageData.Author))
+        {
+            _logger.LogInformation($"author is null message channel id: {channel.BaseId}, message id: {message.ID}");
+            messageData.Author = channel.Author;
+        }
 
         var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
@@ -102,7 +108,7 @@ public class MessageProcess : IMessageProcess
             Directory.CreateDirectory(_downloadConfig.LocalPath);
             _logger.LogInformation($"directory created: {_downloadConfig.LocalPath}");
         }
-        
+
         if (media is MessageMediaDocument { document: Document document })
         {
             var filename = Path.Combine(_downloadConfig.LocalPath, document.ID.ToString());
@@ -209,6 +215,10 @@ public class MessageProcess : IMessageProcess
                         c = (comment as TL.Message)?.MapToComment();
                         if (c != null)
                         {
+                            if (string.IsNullOrEmpty(c.Author))
+                            {
+                                _logger.LogInformation($"comment has author is null: message id: {message.BaseId}, channel: {message.ChannelId}");
+                            }
                             message.Comments.Add(c);
                         }
                     }

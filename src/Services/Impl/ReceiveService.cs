@@ -37,6 +37,11 @@ public class ReceiveService : IReceiveService
     /// </summary>
     private const int MaxRowsInRequest = 30;
 
+    /// <summary>
+    /// Max exceptions on the one page
+    /// </summary>
+    private const int MaxError = 5;
+
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
         IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageProcess messageProcess)
     {
@@ -63,7 +68,8 @@ public class ReceiveService : IReceiveService
                 var lastDate = DateTime.MaxValue;
                 var needBreak = false;
                 var page = 0;
-
+                var pageError = 0;
+                var countError = 0;
                 // last date is ok or need finished to parsing messages
                 while (_maxDate < lastDate && !needBreak)
                 {
@@ -88,7 +94,7 @@ public class ReceiveService : IReceiveService
                                 lastDate = message.Date;
                                 _logger.LogInformation($"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
                             }
-                            Thread.Sleep(2500);
+                            await Task.Delay(2500);
                         }
 
                         if (messages.Messages?.Length < MaxRowsInRequest)
@@ -100,9 +106,38 @@ public class ReceiveService : IReceiveService
 
                         page += MaxRowsInRequest;
                     }
+                    catch (ApplicationException e)
+                    {
+                        _logger.LogError($"error get messages and processing: {channel.Id}, page: {page}, {e.Source}, {e.TargetSite}, {e}");
+
+                        await _clientTelegram.ConnectAsync();
+
+                        if (pageError != page)
+                        {
+                            pageError = page;
+                            countError = 1;
+                        }
+                        else { countError++; }
+                        if (countError > MaxError)
+                        {
+                            _logger.LogError($"too many errors: {channel.Id}, page: {page}");
+                            break;
+                        }
+                    }
                     catch (Exception e)
                     {
                         _logger.LogError($"error get messages and processing their: {channel.Id}, page: {page}, {e}");
+                        if (pageError != page)
+                        {
+                            pageError = page;
+                            countError = 1;
+                        }
+                        else { countError++; }
+                        if (countError > MaxError)
+                        {
+                            _logger.LogError($"too many errors: {channel.Id}, page: {page}");
+                            break;
+                        }
                     }
                 }
 
