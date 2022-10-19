@@ -15,6 +15,11 @@ public class Message
     public long BaseId { get; set; }
     
     /// <summary>
+    /// Group Id for unite message in the one
+    /// </summary>
+    public long GroupId { get; set; }
+    
+    /// <summary>
     /// Author of message
     /// </summary>
     public string Author { get; set; }

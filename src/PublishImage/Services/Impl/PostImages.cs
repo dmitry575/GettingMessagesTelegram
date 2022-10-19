@@ -7,5 +7,6 @@ public class PostImages : IPostImages
 {
     public Task<PostImagesResult> Send(Media media)
     {
+        return null;
     }
 }

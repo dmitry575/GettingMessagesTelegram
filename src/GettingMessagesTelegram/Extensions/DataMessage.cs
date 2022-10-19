@@ -13,6 +13,7 @@ public static class DataMessage
         return new Data.Message
         {
             BaseId = message.id,
+            GroupId = message.grouped_id,
             Author = message.post_author,
             Content = message.message,
             DateCreated = message.Date,

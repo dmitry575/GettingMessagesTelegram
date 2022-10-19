@@ -4,3 +4,10 @@ src/obj/
 src/.idea/
 src/.run/
 .vs/
+src/GettingMessagesTelegram/bin/
+src/GettingMessagesTelegram/obj/
+src/PublishImage/bin/
+src/PublishImage/obj/
+src/GettingMessagesTelegram/bin/
+src/GettingMessagesTelegram/obj/
+src/GettingMessagesTelegram/bin/
