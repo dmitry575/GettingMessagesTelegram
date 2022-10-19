@@ -8,6 +8,6 @@ namespace GettingMessagesTelegram.Media
     /// </summary>
     public interface IMediaCreator
     {
-        DataAccess.Media Create(long messageId, MessageMedia media);
+        Data.Media Create(long messageId, MessageMedia media);
     }
 }

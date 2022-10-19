@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GettingMessagesTelegram.DataAccess;
 
-public class MediaMap: IEntityTypeConfiguration<Media>
+public class MediaMap: IEntityTypeConfiguration<Data.Media>
 {
-    public void Configure(EntityTypeBuilder<Media> builder)
+    public void Configure(EntityTypeBuilder<Data.Media> builder)
     {
         builder.ToTable("Medias");
         builder.HasKey(p => p.Id);

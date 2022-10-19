@@ -15,6 +15,11 @@ public class Message
     public long BaseId { get; set; }
     
     /// <summary>
+    /// Group Id for unite message in the one
+    /// </summary>
+    public long GroupId { get; set; }
+    
+    /// <summary>
     /// Author of message
     /// </summary>
     public string Author { get; set; }
@@ -48,5 +53,5 @@ public class Message
     
     public virtual ICollection<Comment> Comments { get; set; }
     
-    public virtual ICollection<DataAccess.Media> Medias { get; set; }
+    public virtual ICollection<Media> Medias { get; set; }
 }

@@ -88,10 +88,22 @@ public class MessageProcess : IMessageProcess
                 var media = _mediaCreator.Create(messageData.Id, m.media);
                 if (media != null)
                 {
-                    messageData.Medias ??= new List<DataAccess.Media>();
-                    media.LocalPath = await DownloadFile(m.media);
-
-                    messageData.Medias.Add(media);
+                    messageData.Medias ??= new List<Data.Media>();
+                    var existsMedia = messageData.Medias.FirstOrDefault(x => x.BaseId == media.BaseId);
+                    if (existsMedia == null)
+                    {
+                        media.LocalPath = await DownloadFile(m.media);
+                        messageData.Medias.Add(media);
+                    }
+                    else
+                    {
+                        // if media did not download before, download it
+                        if (string.IsNullOrEmpty(existsMedia.LocalPath))
+                        {
+                            // update local path
+                            existsMedia.LocalPath = await DownloadFile(m.media);
+                        }
+                    }
                 }
             }
         }
@@ -161,9 +173,23 @@ public class MessageProcess : IMessageProcess
         }
         else
         {
-            // create a new message to database
-            messageData = m.Map();
-            messageData.ChannelId = channelId;
+            // check by group id, if message has same group we need add photo and video
+            if (m.grouped_id > 0)
+            {
+                (exists, messageData) = await MessageGroupExists(channelId, m.grouped_id);
+            }
+
+            if (exists)
+            {
+                _logger.LogInformation("found exists message by group id: " + m.grouped_id + ", message id:" + m.ID +
+                                       "\t" + m.message + "\t" + m.post_author);
+            }
+            else
+            {
+                // create a new message to database
+                messageData = m.Map();
+                messageData.ChannelId = channelId;
+            }
         }
 
         _logger.LogInformation(m.ID + "\t" + m.post_author);
@@ -252,6 +278,15 @@ public class MessageProcess : IMessageProcess
     private async Task<(bool, Message)> MessageExists(long channelId, long messageId)
     {
         var message = await _messageService.GetByBaseId(channelId, messageId);
+        return (message is not null, message);
+    }
+
+    /// <summary>
+    /// If exists messages by group id
+    /// </summary>
+    private async Task<(bool, Message)> MessageGroupExists(long channelId, long groupId)
+    {
+        var message = await _messageService.GetByGroupId(channelId, groupId);
         return (message is not null, message);
     }
 }

@@ -19,6 +19,7 @@ public class MessageService : IMessageService
             .Messages
             .AsQueryable()
             .Include(x => x.Comments)
+            .Include(x => x.Medias)
             .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.BaseId == baseId);
     }
 
@@ -30,5 +31,15 @@ public class MessageService : IMessageService
         }
 
         return await _messagesContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<Message> GetByGroupId(long channelId, long groupId)
+    {
+        return _messagesContext
+            .Messages
+            .AsQueryable()
+            .Include(x => x.Comments)
+            .Include(x => x.Medias)
+            .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.GroupId == groupId);
     }
 }

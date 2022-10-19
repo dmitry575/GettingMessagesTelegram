@@ -1,7 +1,6 @@
-﻿using GettingMessagesTelegram.Data;
-using GettingMessagesTelegram.Enums;
+﻿using GettingMessagesTelegram.Enums;
 
-namespace GettingMessagesTelegram.DataAccess;
+namespace GettingMessagesTelegram.Data;
 
 public class Media
 {

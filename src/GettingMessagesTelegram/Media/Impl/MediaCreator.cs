@@ -5,7 +5,7 @@ namespace GettingMessagesTelegram.Media.Impl
 {
     public class MediaCreator : IMediaCreator
     {
-        public DataAccess.Media Create(long messageId, MessageMedia media)
+        public Data.Media Create(long messageId, MessageMedia media)
         {
             switch (media)
             {
@@ -41,8 +41,8 @@ namespace GettingMessagesTelegram.Media.Impl
             return null;
         }
 
-        private DataAccess.Media CreateMedia(long messageId, Photo photo)
-            => new DataAccess.Media
+        private Data.Media CreateMedia(long messageId, Photo photo)
+            => new Data.Media
             {
                 BaseId = photo.ID,
                 HashAccess = photo.access_hash,
@@ -58,8 +58,8 @@ namespace GettingMessagesTelegram.Media.Impl
         /// </summary>
         /// <param name="messageId"></param>
         /// <param name="document"></param>
-        private DataAccess.Media CreateMedia(long messageId, Document document)
-            => new DataAccess.Media
+        private Data.Media CreateMedia(long messageId, Document document)
+            => new Data.Media
             {
                 BaseId = document.ID,
                 HashAccess = document.access_hash,
@@ -75,8 +75,8 @@ namespace GettingMessagesTelegram.Media.Impl
         /// </summary>
         /// <param name="messageId">Id message from table Messages</param>
         /// <param name="webPage">Information about page</param>
-        private DataAccess.Media CreateMedia(long messageId, WebPage webPage)
-            => new DataAccess.Media
+        private Data.Media CreateMedia(long messageId, WebPage webPage)
+            => new Data.Media
             {
                 BaseId = webPage.ID,
                 Description = webPage.description,

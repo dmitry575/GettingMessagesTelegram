@@ -11,7 +11,7 @@ public class MessagesContext : DbContext
     
     public DbSet<Comment> Comments { get; set; }
     
-    public DbSet<Media> Medias { get; set; }
+    public DbSet<Data.Media> Medias { get; set; }
 
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)

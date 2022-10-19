@@ -1,4 +1,5 @@
 ﻿using GettingMessagesTelegram.DataAccess;
+using GettingMessagesTelegram.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GettingMessagesTelegram.Services.Impl;
@@ -12,7 +13,7 @@ public class MediaService : IMediaService
         _messagesContext = messagesContext;
     }
 
-    public async Task UpdateOrCreate(DataAccess.Media media)
+    public async Task UpdateOrCreate(Data.Media media)
     {
         var m = await _messagesContext
             .Medias
@@ -24,5 +25,18 @@ public class MediaService : IMediaService
                 .Medias.AddAsync(media);
             await _messagesContext.SaveChangesAsync();
         }
+    }
+
+    public async Task<List<Data.Media>> GetPhotosNotSent(long id, int rows, CancellationToken token = default)
+    {
+        return await _messagesContext
+            .Medias
+            .AsQueryable()
+            .Where(x => x.Id > id)
+            .Where(x => x.Type == MediaType.Photo)
+            .Where(x => x.UrlExternal == null || x.UrlExternal == "")
+            .OrderBy(x => x.Id)
+            .Take(rows)
+            .ToListAsync(token);
     }
 }

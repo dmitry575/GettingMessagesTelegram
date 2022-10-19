@@ -4,5 +4,10 @@ src/obj/
 src/.idea/
 src/.run/
 .vs/
-WTelegram.session
-publish/
+src/GettingMessagesTelegram/bin/
+src/GettingMessagesTelegram/obj/
+src/PublishImage/bin/
+src/PublishImage/obj/
+src/GettingMessagesTelegram/bin/
+src/GettingMessagesTelegram/obj/
+src/GettingMessagesTelegram/bin/

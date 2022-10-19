@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS public."Messages"
 "DateCreated" timestamp without time zone NOT NULL,
 "ViewCount" int NOT NULL,
 "CommentCount" int NOT NULL,
-"ChannelId" bigint NOT NULL
+"ChannelId" bigint NOT NULL,
+"GroupId" bigint NOT NULL
 );
 
 
@@ -107,6 +108,8 @@ ALTER TABLE ONLY "Medias" ADD CONSTRAINT ix_medias_id PRIMARY KEY ("Id");
 CREATE INDEX channels_baseid ON "Channels" USING btree ("BaseId");
 
 CREATE INDEX messages_baseid ON "Messages" USING btree ("BaseId");
+
+CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId");
 
 CREATE INDEX comments_baseid ON "Comments" USING btree ("BaseId");
 
