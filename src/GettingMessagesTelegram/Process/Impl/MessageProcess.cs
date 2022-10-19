@@ -168,7 +168,11 @@ public class MessageProcess : IMessageProcess
         else
         {
             // check by group id, if message has same group we need add photo and video
-            (exists, messageData) = await MessageGroupExists(channelId, m.grouped_id);
+            if (m.grouped_id > 0)
+            {
+                (exists, messageData) = await MessageGroupExists(channelId, m.grouped_id);
+            }
+
             if (exists)
             {
                 _logger.LogInformation("found exists message by group id: " + m.grouped_id + ", message id:" + m.ID +
