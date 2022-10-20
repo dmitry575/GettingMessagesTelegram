@@ -1,12 +1,8 @@
 ﻿using System.Diagnostics;
-using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DI;
-using GettingMessagesTelegram.Services;
-using GettingMessagesTelegram.Services.Impl;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using PublishImage.Services;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();

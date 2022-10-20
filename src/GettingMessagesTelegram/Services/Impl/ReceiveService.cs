@@ -1,4 +1,5 @@
 ﻿using GettingMessagesTelegram.Config;
+using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ public class ReceiveService : IReceiveService
     /// <summary>
     /// Max of rows in one requests for pagination
     /// </summary>
-    private const int MaxRowsInRequest = 30;
+    private const int MaxRowsInRequest = 100;
 
     /// <summary>
     /// Max exceptions on the one page
@@ -75,9 +76,14 @@ public class ReceiveService : IReceiveService
                 {
                     try
                     {
-                        var messages =
-                            await _clientTelegram.Messages_GetHistory(peerChanel, add_offset: page,
-                                limit: MaxRowsInRequest);
+                        var messages = await _clientTelegram.Messages_GetHistory(peerChanel, add_offset: page, limit: MaxRowsInRequest);
+
+                        if (messages == null || messages.Count <= 0)
+                        {
+                            _logger.LogInformation($"messages is ended");
+                            break;
+                        }
+
                         foreach (var message in messages.Messages)
                         {
                             _logger.LogInformation($"new message: {message.ID} - start");

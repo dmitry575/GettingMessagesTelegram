@@ -12,4 +12,11 @@ public interface IMediaService
     /// Get not send images
     /// </summary>
     Task<List<Data.Media>> GetPhotosNotSent(long id, int rows, CancellationToken token = default);
+
+    /// <summary>
+    /// Update url external on hosting
+    /// </summary>
+    /// <param name="mediaId">Id mediain database</param>
+    /// <param name="urlExternal">New url</param>
+    Task UpdateSend(long mediaId, string urlExternal);
 }

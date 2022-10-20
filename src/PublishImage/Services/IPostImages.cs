@@ -8,5 +8,5 @@ namespace PublishImage.Services;
 /// </summary>
 public interface IPostImages
 {
-    Task<PostImagesResult> Send(Media media);
+    Task<PostImagesResult> SendAsync(Media media);
 }
