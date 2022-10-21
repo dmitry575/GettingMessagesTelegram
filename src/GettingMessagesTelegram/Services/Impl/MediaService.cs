@@ -39,4 +39,17 @@ public class MediaService : IMediaService
             .Take(rows)
             .ToListAsync(token);
     }
+
+    public async Task UpdateSend(long mediaId, string urlExternal)
+    {
+        var media = await _messagesContext
+            .Medias
+            .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == mediaId);
+        if (media != null)
+        {
+            media.UrlExternal = urlExternal;
+            await _messagesContext.SaveChangesAsync();
+        }
+    }
 }

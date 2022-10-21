@@ -27,7 +27,7 @@ namespace GettingMessagesTelegram.Media.Impl
                     }
 
                     return null;
-                
+
                 case MessageMediaPhoto photo:
                     if (photo.photo is Photo)
                     {
@@ -82,7 +82,7 @@ namespace GettingMessagesTelegram.Media.Impl
                 Description = webPage.description,
                 HashAccess = webPage.hash,
                 Type = MediaType.WebPage,
-                Url = webPage.url,
+                Url = webPage.url?.Length > 512 ? webPage.url.Substring(0, 512) : webPage.url,
                 MessageId = messageId
             };
 

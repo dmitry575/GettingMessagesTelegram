@@ -5,7 +5,12 @@ namespace PublishImage.Services.Impl;
 
 public class PostImages : IPostImages
 {
-    public Task<PostImagesResult> Send(Media media)
+    private readonly HttpClient _httpClient;
+    public PostImages(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+    public Task<PostImagesResult> SendAsync(Media media)
     {
         return null;
     }

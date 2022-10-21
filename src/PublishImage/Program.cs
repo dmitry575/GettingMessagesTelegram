@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PublishImage.Services;
+using System.Net.Http;
+using PublishImage.Services.Impl;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -22,8 +24,12 @@ var configuration = builder.Build();
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
-        services.Configure(configuration);
-
+        //services.Configure(configuration);
+        services.AddSingleton<IPostImages>(c =>
+        {
+            var client = new HttpClient(new HttpClientHandler());
+            return new PostImages(client);
+        });
         services.AddHostedService<PublishService>();
     })
     .Build();
