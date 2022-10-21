@@ -255,11 +255,17 @@ public class MessageProcess : IMessageProcess
                     break;
 
                 page += MaxRowsComments;
+                await Task.Delay(1500);
             }
             catch (RpcException e)
             {
                 _logger.LogError(
                     $"get comments for message: {telegramMessageId} failed, page: {page}, code: {e.Code}, {e}");
+                if (e.Code == 401)
+                {
+                    await _clientTelegram.LoginUserIfNeeded();
+                    continue;
+                }
                 break;
             }
             catch (Exception e)
