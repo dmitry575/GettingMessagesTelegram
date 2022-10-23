@@ -15,7 +15,6 @@ public class PostImages : IPostImages
 
     private readonly HttpClient _httpClient;
     private readonly ILogger<PublishService> _logger;
-    private readonly JsonSerializerSettings _settings;
     private string _token;
 
     public PostImages(HttpClient httpClient, ILogger<PublishService> logger)
@@ -24,8 +23,6 @@ public class PostImages : IPostImages
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         _httpClient.BaseAddress = new Uri(BaseUrl);
-
-        _settings = new JsonSerializerSettings { MaxDepth = int.MaxValue };
 
 
         _logger = logger;
@@ -120,8 +117,6 @@ public class PostImages : IPostImages
         content.Add(new StringContent("gallery"), request.Gallery);
         content.Add(new StringContent("\""), request.Expire.ToString());
     }
-
-
 
     /// <summary>
     /// Get token for working

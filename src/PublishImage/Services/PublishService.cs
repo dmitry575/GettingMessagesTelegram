@@ -37,7 +37,8 @@ public class PublishService : BackgroundService
                 var result = await _postImages.SendAsync(photo);
                 if (result.Success)
                 {
-                    _logger.LogInformation($"image sent to hosting: {photo.Id}");
+                    _logger.LogInformation($"image sent to hosting: {photo.Id}, url: {result.Url}");
+
                     await _mediaService.UpdateSend(photo.Id, result.Url);
                     count++;
                 }

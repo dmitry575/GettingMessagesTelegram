@@ -5,7 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PublishImage.Services;
 using System.Net.Http;
+using GettingMessagesTelegram.Services;
 using PublishImage.Services.Impl;
+using GettingMessagesTelegram.Services.Impl;
+using GettingMessagesTelegram.DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -24,9 +28,15 @@ var configuration = builder.Build();
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
-        //services.Configure(configuration);
-        services.AddScoped<HttpClient>(c => { return new HttpClient(new HttpClientHandler()); });
+        // get connection string to database
+        string connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
+
+        services.AddSingleton(configuration);
+
+        services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.AddSingleton<IPostImages, PostImages>();
+        services.AddSingleton<IMediaService, MediaService>();
         services.AddHostedService<PublishService>();
     })
     .Build();

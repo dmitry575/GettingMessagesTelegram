@@ -9,7 +9,7 @@ namespace PublishImage.Models
         /// <summary>
         /// Status request
         /// </summary>
-        public int Status { get; set; }
+        public string Status { get; set; }
 
         /// <summary>
         /// Url result
