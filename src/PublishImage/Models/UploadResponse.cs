@@ -1,0 +1,19 @@
+﻿
+namespace PublishImage.Models
+{
+    /// <summary>
+    /// Response after upload image
+    /// </summary>
+    public class UploadResponse
+    {
+        /// <summary>
+        /// Status request
+        /// </summary>
+        public int Status { get; set; }
+
+        /// <summary>
+        /// Url result
+        /// </summary>
+        public string Url { get; set; }
+    }
+}

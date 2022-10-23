@@ -25,11 +25,8 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
         //services.Configure(configuration);
-        services.AddSingleton<IPostImages>(c =>
-        {
-            var client = new HttpClient(new HttpClientHandler());
-            return new PostImages(client);
-        });
+        services.AddScoped<HttpClient>(c => { return new HttpClient(new HttpClientHandler()); });
+        services.AddSingleton<IPostImages, PostImages>();
         services.AddHostedService<PublishService>();
     })
     .Build();

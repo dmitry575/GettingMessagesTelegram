@@ -4,6 +4,7 @@ using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading.Channels;
 using TL;
 using WTelegram;
 using Channel = TL.Channel;
@@ -36,7 +37,7 @@ public class ReceiveService : IReceiveService
     /// <summary>
     /// Max of rows in one requests for pagination
     /// </summary>
-    private const int MaxRowsInRequest = 100;
+    private const int MaxRowsInRequest = 50;
 
     /// <summary>
     /// Max exceptions on the one page
@@ -58,6 +59,9 @@ public class ReceiveService : IReceiveService
     {
         var me = await _clientTelegram.LoginUserIfNeeded();
         _logger.LogInformation($"Loggin by: {me.first_name}");
+        var page = 0;
+        var pageError = 0;
+        var countError = 0;
         try
         {
             foreach (var channel in _channelsConfig)
@@ -68,9 +72,10 @@ public class ReceiveService : IReceiveService
                 _logger.LogInformation($"reading messages from channel: {channel.Id}");
                 var lastDate = DateTime.MaxValue;
                 var needBreak = false;
-                var page = 0;
-                var pageError = 0;
-                var countError = 0;
+                page = 0;
+                pageError = 0;
+                countError = 0;
+
                 // last date is ok or need finished to parsing messages
                 while (_maxDate < lastDate && !needBreak)
                 {
@@ -112,34 +117,36 @@ public class ReceiveService : IReceiveService
 
                         page += MaxRowsInRequest;
                     }
-                    catch (ApplicationException e)
+                    catch (RpcException e)
                     {
                         _logger.LogError($"error get messages and processing: {channel.Id}, page: {page}, {e.Source}, {e.TargetSite}, {e}");
-
-                        await _clientTelegram.ConnectAsync();
-
-                        if (pageError != page)
+                        if (e.Code == 401)
                         {
-                            pageError = page;
-                            countError = 1;
+                            await _clientTelegram.LoginUserIfNeeded();
+                            continue;
                         }
-                        else { countError++; }
-                        if (countError > MaxError)
+                        if (isError())
                         {
                             _logger.LogError($"too many errors: {channel.Id}, page: {page}");
                             break;
                         }
                     }
+                    catch (ApplicationException e)
+                    {
+                        _logger.LogError($"error get messages and processing: {channel.Id}, page: {page}, {e.Source}, {e.TargetSite}, {e}");
+                        await _clientTelegram.ConnectAsync();
+
+                        if (isError())
+                        {
+                            _logger.LogError($"too many errors: {channel.Id}, page: {page}");
+                            break;
+
+                        }
+                    }
                     catch (Exception e)
                     {
                         _logger.LogError($"error get messages and processing their: {channel.Id}, page: {page}, {e}");
-                        if (pageError != page)
-                        {
-                            pageError = page;
-                            countError = 1;
-                        }
-                        else { countError++; }
-                        if (countError > MaxError)
+                        if (isError())
                         {
                             _logger.LogError($"too many errors: {channel.Id}, page: {page}");
                             break;
@@ -160,6 +167,20 @@ public class ReceiveService : IReceiveService
         {
             _logger.LogError("reading messages failed");
             Console.WriteLine(e);
+        }
+
+        bool isError()
+        {
+            if (pageError != page)
+            {
+                pageError = page;
+                countError = 1;
+            }
+            else 
+            { 
+                countError++; 
+            }
+            return countError > MaxError;
         }
     }
 
