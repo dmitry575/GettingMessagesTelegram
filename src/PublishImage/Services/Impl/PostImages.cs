@@ -11,7 +11,7 @@ namespace PublishImage.Services.Impl;
 
 public class PostImages : IPostImages
 {
-    private const string BaseUrl = "https://postimages.org/";
+    private const string BaseUrl = "https://postimages.org";
     private const string ApiUrl = "/login/api";
     private const string PostImageUrl = "/json/rr";
 
@@ -41,6 +41,13 @@ public class PostImages : IPostImages
             return result;
         }
 
+        var fileInfo = new FileInfo(media.LocalPath);
+        if (fileInfo.Length <= 0)
+        {
+            _logger.LogWarning($"images {media.LocalPath} file length is empty");
+            return result;
+        }
+
         // get token
         if (string.IsNullOrEmpty(_token))
         {
@@ -54,7 +61,7 @@ public class PostImages : IPostImages
 
         var url = await SendRequest(media);
 
-        if (string.IsNullOrEmpty(url))
+        if (!string.IsNullOrEmpty(url))
         {
             return new PostImagesResult { Success = true, Url = url };
         }
@@ -75,7 +82,7 @@ public class PostImages : IPostImages
         SetData(content,
             new UploadRequest { Token = _token, UploadSession = SessionHelper.GetSession(), Gallery = string.Empty });
 
-        using var message = await _httpClient.PostAsync(PostImageUrl, content);
+        using var message = await _httpClient.PostAsync(BaseUrl+PostImageUrl, content);
         _logger.LogInformation($"response send file to hosting: {media.LocalPath}, message: {media.MessageId}");
 
         var json = await message.Content.ReadAsStringAsync();
@@ -98,7 +105,7 @@ public class PostImages : IPostImages
             var html = await imagesUls.Content.ReadAsStringAsync();
             HtmlDocument hap = new HtmlDocument();
             hap.LoadHtml(html);
-            HtmlNode input = hap.DocumentNode.SelectSingleNode("//input[@id='code_html']");
+            HtmlNode input = hap.DocumentNode.SelectSingleNode("//input[@id='code_direct']");
 
             if (input != null)
             {

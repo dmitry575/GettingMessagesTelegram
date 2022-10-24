@@ -10,7 +10,7 @@ namespace PublishImage.Models
         [JsonProperty("upload_session")]
         public string UploadSession { get; set; }
 
-        [JsonProperty("numfiles")] public int Numfiles { get; set; } = 0;
+        [JsonProperty("numfiles")] public int Numfiles { get; set; } = 1;
 
         [JsonProperty("optsize")]
         public int Optsize { get; set; }

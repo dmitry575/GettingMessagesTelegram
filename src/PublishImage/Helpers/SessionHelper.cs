@@ -2,7 +2,7 @@
 {
     public class SessionHelper
     {
-        private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        private const string Chars = "abcdefghijklmnopqrstuvwxyz0123456789";
         private static readonly Random Random = new();
 
         /// <summary>
@@ -12,7 +12,7 @@
         public static string GetSession(int length = 32)
         {
             return new string(Enumerable.Repeat(Chars, length)
-                .Select(s => s[Random.Next(s.Length)]).ToArray());
+                .Select(s => s[Random.Next(s.Length)]).ToArray()).ToLower();
         }
     }
 }
