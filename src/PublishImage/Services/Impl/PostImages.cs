@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PublishImage.Models;
 using System.Globalization;
+using System.Text.RegularExpressions;
+using PublishImage.Helpers;
 
 namespace PublishImage.Services.Impl;
 
@@ -20,13 +22,14 @@ public class PostImages : IPostImages
     public PostImages(HttpClient httpClient, ILogger<PublishService> logger)
     {
         _httpClient = httpClient;
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36");
+        _httpClient.DefaultRequestHeaders.Add("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         _httpClient.BaseAddress = new Uri(BaseUrl);
 
-
         _logger = logger;
     }
+
     public async Task<PostImagesResult> SendAsync(Media media)
     {
         var result = new PostImagesResult { Success = false };
@@ -56,7 +59,6 @@ public class PostImages : IPostImages
             return new PostImagesResult { Success = true, Url = url };
         }
 
-
         return result;
     }
 
@@ -66,10 +68,12 @@ public class PostImages : IPostImages
     /// <param name="media">Information about file</param>
     private async Task<string> SendRequest(Media media)
     {
-        using var content = new MultipartFormDataContent("----" + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        using var content =
+            new MultipartFormDataContent("----" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
 
-        content.Add(new StreamContent(new FileStream(media.LocalPath, FileMode.Open)), "file", media.FileName + ".jpg");
-        SetData(content, new UploadRequest { Token = _token });
+        content.Add(new StreamContent(new FileStream(media.LocalPath, FileMode.Open)), "file", media.BaseId + ".jpg");
+        SetData(content,
+            new UploadRequest { Token = _token, UploadSession = SessionHelper.GetSession(), Gallery = string.Empty });
 
         using var message = await _httpClient.PostAsync(PostImageUrl, content);
         _logger.LogInformation($"response send file to hosting: {media.LocalPath}, message: {media.MessageId}");
@@ -105,17 +109,19 @@ public class PostImages : IPostImages
         {
             _logger.LogError($"get token failed: {e}");
         }
+
         return string.Empty;
     }
 
     private static void SetData(MultipartFormDataContent content, UploadRequest request)
     {
-        content.Add(new StringContent("token"), request.Token);
-        content.Add(new StringContent("upload_session"), request.UploadSession);
-        content.Add(new StringContent("numfiles"), request.Numfiles.ToString());
-        content.Add(new StringContent("optsize"), request.Optsize.ToString());
-        content.Add(new StringContent("gallery"), request.Gallery);
-        content.Add(new StringContent("\""), request.Expire.ToString());
+        content.Add(new StringContent(request.Token), "token");
+        content.Add(new StringContent(request.UploadSession), "upload_session");
+        content.Add(new StringContent(request.Numfiles.ToString()), "numfiles");
+        content.Add(new StringContent(request.Optsize.ToString()), "optsize");
+        content.Add(new StringContent(request.Gallery), "gallery");
+        content.Add(new StringContent(request.Expire.ToString()), "expire");
+        content.Add(new StringContent(DateTime.UtcNow.ToFileTimeUtc().ToString()), "session_upload");
     }
 
     /// <summary>
@@ -125,21 +131,22 @@ public class PostImages : IPostImages
     {
         try
         {
-            var response = await _httpClient.GetAsync(ApiUrl);
+            var response = await _httpClient.GetAsync("/");
             var html = await response.Content.ReadAsStringAsync();
-            HtmlDocument hap = new HtmlDocument();
-            hap.LoadHtml(html);
-            HtmlNode input = hap.DocumentNode.SelectSingleNode("//input[@id='api_key']");
-
-            if (input != null)
+            var matches = Regex.Matches(html, "\"token\",\"(\\w*)\"");
+            for (var i = 0; i < matches.Count; i++)
             {
-                return input.GetAttributeValue("value", string.Empty);
+                if (matches[i].Success)
+                {
+                    return matches[i].Groups[1].Value;
+                }
             }
         }
         catch (Exception e)
         {
             _logger.LogError($"get token failed: {e}");
         }
+
         return string.Empty;
     }
 }

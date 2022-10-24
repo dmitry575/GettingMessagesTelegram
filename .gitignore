@@ -11,5 +11,7 @@ src/PublishImage/obj/
 src/GettingMessagesTelegram/bin/
 src/GettingMessagesTelegram/obj/
 src/GettingMessagesTelegram/bin/
+tests/PublishImage.Tests/bin/
+tests/PublishImage.Tests/obj/
 WTelegram.session
 publish/
