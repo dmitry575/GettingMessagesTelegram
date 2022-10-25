@@ -12,7 +12,6 @@ namespace PublishImage.Services.Impl;
 public class PostImages : IPostImages
 {
     private const string BaseUrl = "https://postimages.org";
-    private const string ApiUrl = "/login/api";
     private const string PostImageUrl = "/json/rr";
 
     private readonly HttpClient _httpClient;
@@ -97,6 +96,9 @@ public class PostImages : IPostImages
         return string.Empty;
     }
 
+    /// <summary>
+    /// Parsing response after upload and get direct url to image
+    /// </summary>
     private async Task<string> GetResponse(UploadResponse response)
     {
         try
@@ -120,6 +122,9 @@ public class PostImages : IPostImages
         return string.Empty;
     }
 
+    /// <summary>
+    /// Setting data to form
+    /// </summary>
     private static void SetData(MultipartFormDataContent content, UploadRequest request)
     {
         content.Add(new StringContent(request.Token), "token");

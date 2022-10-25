@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GettingMessagesTelegram.Services;
 
-public class Worker: BackgroundService
+public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly IHost _host;
@@ -19,7 +19,19 @@ public class Worker: BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await _receiveService.WorkAsync(stoppingToken);
+
+        _receiveService.SubscribeToEvents();
+
+        _logger.LogInformation("Listener of event started");
+
+        WaitHandle.WaitAny(new WaitHandle[] { stoppingToken.WaitHandle });
         await _host.StopAsync(stoppingToken);
-        _logger.LogInformation("Application finished");
+        _logger.LogInformation("Worker finished");
+    }
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        _receiveService?.Dispose();
+        return base.StopAsync(cancellationToken);
     }
 }

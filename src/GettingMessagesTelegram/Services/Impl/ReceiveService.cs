@@ -4,10 +4,13 @@ using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Threading;
 using System.Threading.Channels;
 using TL;
 using WTelegram;
 using Channel = TL.Channel;
+using Message = TL.Message;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -176,14 +179,73 @@ public class ReceiveService : IReceiveService
                 pageError = page;
                 countError = 1;
             }
-            else 
-            { 
-                countError++; 
+            else
+            {
+                countError++;
             }
             return countError > MaxError;
         }
     }
 
+    public void SubscribeToEvents()
+    {
+        _clientTelegram.OnUpdate += ListenUpdate;
+    }
+
+
+    private async Task ListenUpdate(IObject arg)
+    {
+        if (arg is not UpdatesBase updates)
+        {
+            _logger.LogWarning($"received not UpdatesBase event: {arg.GetType()}");
+            return;
+        }
+        foreach (var update in updates.UpdateList)
+            switch (update)
+            {
+                case UpdateNewMessage unm: await ProcessEventMessage(unm.message); break;
+                case UpdateEditMessage uem: await ProcessEventMessage(uem.message); break;
+
+                case UpdateUserTyping:
+                case UpdateChatUserTyping:
+                case UpdateChannelUserTyping:
+                case UpdateChatParticipants:
+                case UpdateUserStatus:
+                case UpdateUserName:
+                case UpdateUserPhoto:
+                    break;
+
+                // Note: UpdateNewChannelMessage and UpdateEditChannelMessage are also handled by above cases
+                default: _logger.LogInformation($"handle a type message type: {update.GetType().Name}"); break; // there are much more update types than the above cases
+            }
+    }
+
+    private async Task ProcessEventMessage(MessageBase message)
+    {
+        var channel = _channelsConfig.FirstOrDefault(x => x.Id == message.Peer.ID);
+        if (channel == null)
+        {
+            _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
+            return;
+        }
+        var channelSql = await _channelsService.CheckAdd(channel.Id, channel.HashAccess, channel.Name);
+        if (channelSql == null)
+        {
+            _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
+            return;
+        }
+
+        var (status, data) = await _messageProcess.Processing(channelSql, message);
+        _logger.LogInformation($"message added or update: {status}, new id: {data?.Id}, base id: {data?.BaseId}");
+
+
+        switch (message)
+        {
+            case TL.MessageService ms:
+                _logger.LogInformation($"MessageService: from {ms.from_id} to ms.peer_id: [{ms.action.GetType().Name}]");
+                break;
+        }
+    }
 
     private async Task PrintAllChats()
     {
@@ -203,5 +265,10 @@ public class ReceiveService : IReceiveService
                     Console.WriteLine($"{id}: Channel {channel.username}: {channel.title}, {channel.access_hash}");
                     break;
             }
+    }
+
+    public void Dispose()
+    {
+        _clientTelegram?.Dispose();
     }
 }
