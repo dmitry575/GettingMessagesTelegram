@@ -24,6 +24,8 @@ public class PostImages : IPostImages
         _httpClient.DefaultRequestHeaders.Add("User-Agent",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+        _httpClient.DefaultRequestHeaders.Add("Referer", BaseUrl);
+        
         _httpClient.BaseAddress = new Uri(BaseUrl);
 
         _logger = logger;
@@ -133,7 +135,8 @@ public class PostImages : IPostImages
         content.Add(new StringContent(request.Optsize.ToString()), "optsize");
         content.Add(new StringContent(request.Gallery), "gallery");
         content.Add(new StringContent(request.Expire.ToString()), "expire");
-        content.Add(new StringContent(DateTime.UtcNow.ToFileTimeUtc().ToString()), "session_upload");
+        content.Add(new StringContent(request.Source), "source");
+        
     }
 
     /// <summary>
