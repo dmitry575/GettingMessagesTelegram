@@ -52,4 +52,17 @@ public class MediaService : IMediaService
             await _messagesContext.SaveChangesAsync();
         }
     }
+
+    public async Task Delete(long id)
+    {
+        var media = await _messagesContext
+            .Medias
+             .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (media != null)
+        {
+            _messagesContext.Remove(media);
+        }
+    }
 }

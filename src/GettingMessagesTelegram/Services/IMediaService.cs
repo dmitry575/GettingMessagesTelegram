@@ -19,4 +19,10 @@ public interface IMediaService
     /// <param name="mediaId">Id mediain database</param>
     /// <param name="urlExternal">New url</param>
     Task UpdateSend(long mediaId, string urlExternal);
+
+    /// <summary>
+    /// Delete media from database
+    /// </summary>
+    /// <param name="id">Media id</param>
+    Task Delete(long id);
 }

@@ -34,6 +34,12 @@ public class PublishService : BackgroundService
 
             foreach (var photo in photos)
             {
+                if (!File.Exists(photo.LocalPath))
+                {
+                    _logger.LogInformation($"image not exists: {photo.Id}, url: {photo.LocalPath}");
+                    await _mediaService.Delete(photo.Id);
+                    continue;
+                }
                 var result = await _postImages.SendAsync(photo);
                 if (result.Success)
                 {
