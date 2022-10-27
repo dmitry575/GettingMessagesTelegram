@@ -1,4 +1,4 @@
-﻿namespace PublishImage.Models;
+﻿namespace GettingMessagesTelegram.Drivers.PostImage.Models;
 
 /// <summary>
 /// Result of sending image to  PostImages.org

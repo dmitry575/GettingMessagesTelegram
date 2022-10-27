@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PublishImage.Models
+namespace GettingMessagesTelegram.Drivers.PostImage.Models
 {
     public class UploadRequest
     {

@@ -205,18 +205,7 @@ public class ReceiveService : IReceiveService
             {
                 case UpdateNewMessage unm: await ProcessEventMessage(unm.message); break;
                 case UpdateEditMessage uem: await ProcessEventMessage(uem.message); break;
-
-                case UpdateUserTyping:
-                case UpdateChatUserTyping:
-                case UpdateChannelUserTyping:
-                case UpdateChatParticipants:
-                case UpdateUserStatus:
-                case UpdateUserName:
-                case UpdateUserPhoto:
-                    break;
-
-                // Note: UpdateNewChannelMessage and UpdateEditChannelMessage are also handled by above cases
-                default: _logger.LogInformation($"handle a type message type: {update.GetType().Name}"); break; // there are much more update types than the above cases
+                default: _logger.LogInformation($"handle a type message type: {update.GetType().Name}"); break; 
             }
     }
 

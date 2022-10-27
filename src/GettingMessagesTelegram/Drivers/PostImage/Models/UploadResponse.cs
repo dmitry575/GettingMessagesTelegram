@@ -1,5 +1,5 @@
 ﻿
-namespace PublishImage.Models
+namespace GettingMessagesTelegram.Drivers.PostImage.Models
 {
     /// <summary>
     /// Response after upload image

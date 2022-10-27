@@ -1,4 +1,5 @@
 ﻿using GettingMessagesTelegram.Data;
+using GettingMessagesTelegram.Drivers.PostImage;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

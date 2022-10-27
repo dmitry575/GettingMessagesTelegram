@@ -1,6 +1,8 @@
 ﻿using System.Configuration;
 using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
+using GettingMessagesTelegram.Drivers.PostImage.Impl;
+using GettingMessagesTelegram.Drivers.PostImage;
 using GettingMessagesTelegram.Media;
 using GettingMessagesTelegram.Media.Impl;
 using GettingMessagesTelegram.Process;
@@ -30,7 +32,7 @@ public static class ConfigureServices
         services.AddSingleton<IMessageProcess, MessageProcess>();
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMediaCreator, MediaCreator>();
-
+        services.AddSingleton<IPostImages, PostImages>();
 
         services.AddLogging(configure =>
         {

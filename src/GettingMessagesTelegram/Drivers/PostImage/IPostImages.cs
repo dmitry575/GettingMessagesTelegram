@@ -1,7 +1,6 @@
-﻿using GettingMessagesTelegram.Data;
-using PublishImage.Models;
+﻿using GettingMessagesTelegram.Drivers.PostImage.Models;
 
-namespace PublishImage.Services;
+namespace GettingMessagesTelegram.Drivers.PostImage;
 
 /// <summary>
 /// Send image to  PostImages.org
@@ -12,5 +11,5 @@ public interface IPostImages
     /// Sending file to server
     /// </summary>
     /// <param name="media">Information about file</param>
-    Task<PostImagesResult> SendAsync(Media media);
+    Task<PostImagesResult> SendAsync(Data.Media media);
 }

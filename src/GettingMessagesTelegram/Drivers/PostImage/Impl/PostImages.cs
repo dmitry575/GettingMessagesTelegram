@@ -1,13 +1,12 @@
-﻿using GettingMessagesTelegram.Data;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using GettingMessagesTelegram.Drivers.PostImage.Models;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PublishImage.Models;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using PublishImage.Helpers;
 
-namespace PublishImage.Services.Impl;
+namespace GettingMessagesTelegram.Drivers.PostImage.Impl;
 
 public class PostImages : IPostImages
 {
@@ -15,10 +14,10 @@ public class PostImages : IPostImages
     private const string PostImageUrl = "/json/rr";
 
     private readonly HttpClient _httpClient;
-    private readonly ILogger<PublishService> _logger;
+    private readonly ILogger<PostImages> _logger;
     private string _token;
 
-    public PostImages(HttpClient httpClient, ILogger<PublishService> logger)
+    public PostImages(HttpClient httpClient, ILogger<PostImages> logger)
     {
         _httpClient = httpClient;
         _httpClient.DefaultRequestHeaders.Add("User-Agent",
@@ -31,7 +30,7 @@ public class PostImages : IPostImages
         _logger = logger;
     }
 
-    public async Task<PostImagesResult> SendAsync(Media media)
+    public async Task<PostImagesResult> SendAsync(Data.Media media)
     {
         var result = new PostImagesResult { Success = false };
 
@@ -74,7 +73,7 @@ public class PostImages : IPostImages
     /// Send file to hosting
     /// </summary>
     /// <param name="media">Information about file</param>
-    private async Task<string> SendRequest(Media media)
+    private async Task<string> SendRequest(Data.Media media)
     {
         using var content =
             new MultipartFormDataContent("----" + DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));

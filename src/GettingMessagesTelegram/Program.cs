@@ -44,5 +44,5 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
 
 Console.WriteLine($"Version: {fvi.FileVersion}");
-Console.WriteLine($"Starting the reading message from Telegram");
+Console.WriteLine("Starting the reading message from Telegram");
 await host.RunAsync();

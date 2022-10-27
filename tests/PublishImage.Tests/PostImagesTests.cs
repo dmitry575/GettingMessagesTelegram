@@ -2,11 +2,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GettingMessagesTelegram.Data;
+using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using PublishImage.Services;
-using PublishImage.Services.Impl;
 
 namespace PublishImage.Tests;
 
@@ -21,7 +20,7 @@ public class Tests
     public async Task SendAsync()
     {
         var httpClient = new HttpClient(new HttpClientHandler());
-        var postImages = new PostImages(httpClient, Mock.Of<ILogger<PublishService>>());
+        var postImages = new PostImages(httpClient, Mock.Of<ILogger<PostImages>>());
 
         var media = new Media()
         {
