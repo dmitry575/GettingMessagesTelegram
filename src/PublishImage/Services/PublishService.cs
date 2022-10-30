@@ -1,8 +1,5 @@
-﻿using GettingMessagesTelegram.Data;
-using GettingMessagesTelegram.Drivers.PostImage;
-using GettingMessagesTelegram.Services;
+﻿using GettingMessagesTelegram.Drivers.PostImage;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace PublishImage.Services;
 

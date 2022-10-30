@@ -1,30 +1,27 @@
-﻿using GettingMessagesTelegram.Data;
-using GettingMessagesTelegram.Drivers.PostImage;
-using GettingMessagesTelegram.Services;
-using Microsoft.Extensions.Hosting;
+﻿using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
 
-namespace PublishImage.Services;
+namespace GettingMessagesTelegram.Drivers.PostImage.Impl;
 
-public class PublishService : BackgroundService
+public class PublishMediaService : IPublishMediaService
 {
     private const int Rows = 20;
     private readonly IMediaService _mediaService;
     private readonly IPostImages _postImages;
-    private readonly ILogger<PublishService> _logger;
+    private readonly ILogger<PublishMediaService> _logger;
 
-    public PublishService(IMediaService mediaService, IPostImages postImages, ILogger<PublishService> logger)
+    public PublishMediaService(IMediaService mediaService, IPostImages postImages, ILogger<PublishMediaService> logger)
     {
         _mediaService = mediaService;
         _postImages = postImages;
         _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         long id = -1;
         var count = 0;
-        List<Media> photos;
+        List<Data.Media> photos;
         while ((photos = await _mediaService.GetPhotosNotSent(id, Rows, stoppingToken)) != null)
         {
             if (photos.Count <= 0)
