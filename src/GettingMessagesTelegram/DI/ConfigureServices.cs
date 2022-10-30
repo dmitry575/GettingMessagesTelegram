@@ -3,6 +3,7 @@ using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using GettingMessagesTelegram.Drivers.PostImage;
+using GettingMessagesTelegram.Drivers.Translates.Config;
 using GettingMessagesTelegram.Media;
 using GettingMessagesTelegram.Media.Impl;
 using GettingMessagesTelegram.Process;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using GettingMessagesTelegram.Drivers.Youtube.Config;
 
 namespace GettingMessagesTelegram.DI;
 
@@ -46,6 +48,8 @@ public static class ConfigureServices
         services.Configure<TelegramConfig>(configuration.GetSection("Telegram"));
         services.Configure<ChannelsConfig>(configuration.GetSection("Channels"));
         services.Configure<DownloadConfig>(configuration.GetSection("Download"));
+        services.Configure<TranslatesConfig>(configuration.GetSection("Translates"));
+        services.Configure<YoutubeConfig>(configuration.GetSection("Youtube"));
         //services.Configure<ChannelsConfig>(options => configuration.GetSection("Channels").Bind(options));
         return services;
     }
