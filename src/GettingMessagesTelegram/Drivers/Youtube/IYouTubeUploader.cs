@@ -1,4 +1,7 @@
 ﻿
+using GettingMessagesTelegram.Drivers.PostImage.Models;
+using GettingMessagesTelegram.Drivers.Youtube.Models;
+
 namespace GettingMessagesTelegram.Drivers.Youtube
 {
     /// <summary>
@@ -9,8 +12,10 @@ namespace GettingMessagesTelegram.Drivers.Youtube
         /// <summary>
         /// Upload one file to youtube
         /// </summary>
+        /// <param name="title">Title of video</param>
+        /// <param name="description">Description of video</param>
         /// <param name="fileName">Full file path</param>
         /// <param name="cancellation"></param>
-        Task<bool> UploadAsync(string fileName, CancellationToken cancellation = default);
+        Task<UploadResult> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default);
     }
 }

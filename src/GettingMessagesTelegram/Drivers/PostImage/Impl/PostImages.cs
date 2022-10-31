@@ -30,9 +30,9 @@ public class PostImages : IPostImages
         _logger = logger;
     }
 
-    public async Task<PostImagesResult> SendAsync(Data.Media media)
+    public async Task<UploadResult> SendAsync(Data.Media media)
     {
-        var result = new PostImagesResult { Success = false };
+        var result = new UploadResult { Success = false };
 
         // check file
         if (!File.Exists(media.LocalPath))
@@ -63,7 +63,7 @@ public class PostImages : IPostImages
 
         if (!string.IsNullOrEmpty(url))
         {
-            return new PostImagesResult { Success = true, Url = url };
+            return new UploadResult { Success = true, Url = url };
         }
 
         return result;

@@ -1,51 +1,77 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3.Data;
 using Google.Apis.YouTube.v3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
+using GettingMessagesTelegram.Drivers.Youtube.Config;
+using Microsoft.Extensions.Options;
+using GettingMessagesTelegram.Drivers.PostImage.Impl;
+using Microsoft.Extensions.Logging;
 
 namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
-    public class YouTubeUploader:IYouTubeUploader
+    /// <summary>
+    /// upload video to youtube channel
+    /// </summary>
+    public class YouTubeUploader : IYouTubeUploader
     {
-        public Task<bool> UploadAsync(string fileName, CancellationToken cancellation = default)
+        private readonly ILogger<YouTubeUploader> _logger;
+        private readonly YoutubeConfig _config;
+
+        public YouTubeUploader(IOptions<YoutubeConfig> config, ILogger<YouTubeUploader> logger)
         {
-            var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-               new ,
-                // This OAuth 2.0 access scope allows an application to upload files to the
-                // authenticated user's YouTube channel, but doesn't allow other types of access.
-                new[] { YouTubeService.Scope.YoutubeUpload },
-                "user",
-                CancellationToken.None
-            );
-
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            _logger = logger;
+            _config = config.Value;
+        }
+        public async Task<bool> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default)
+        {
+            try
             {
-                HttpClientInitializer = credential,
-                ApplicationName = Assembly.GetExecutingAssembly().GetName().Name
-            });
+                var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    new ClientSecrets { ClientId = _config.ClientId, ClientSecret = _config.ClientSecret },
+                    // This OAuth 2.0 access scope allows an application to upload files to the
+                    // authenticated user's YouTube channel, but doesn't allow other types of access.
+                    new[] { YouTubeService.Scope.YoutubeUpload },
+                    "user",
+                    cancellation
+                );
 
-            var video = new Video();
-            video.Snippet = new VideoSnippet();
-            video.Snippet.Title = "Default Video Title";
-            video.Snippet.Description = "Default Video Description";
-            video.Snippet.Tags = new string[] { "tag1", "tag2" };
-            video.Snippet.CategoryId = "22"; // See https://developers.google.com/youtube/v3/docs/videoCategories/list
-            video.Status = new VideoStatus();
-            video.Status.PrivacyStatus = "unlisted"; // or "private" or "public"
-            var filePath = @"REPLACE_ME.mp4"; // Replace with path to actual movie file.
+                var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = Assembly.GetExecutingAssembly().GetName().Name
+                });
 
-            using (var fileStream = new FileStream(filePath, FileMode.Open))
-            {
-                var videosInsertRequest = youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
-               
-                await videosInsertRequest.UploadAsync();
+                var video = new Video
+                {
+                    Snippet = new VideoSnippet
+                    {
+                        Title = title,
+                        Description = description,
+                        Tags = new string[] { "war", "warinukrain", "war2022" },
+                        CategoryId = "22" // See https://developers.google.com/youtube/v3/docs/videoCategories/list
+                    },
+                    Status = new VideoStatus
+                    {
+                        PrivacyStatus = "public" // or "private" or "public"
+                    }
+                };
+
+
+                using var fileStream = new FileStream(fileName, FileMode.Open);
+                
+                var videosInsertRequest =
+                    youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
+
+                var result = await videosInsertRequest.UploadAsync(cancellation);
             }
+            catch (Exception e)
+            {
+                _logger.LogError($"upload video failed, {fileName}, {title}, {e}");
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -29,11 +29,21 @@ public class MediaService : IMediaService
 
     public async Task<List<Data.Media>> GetPhotosNotSent(long id, int rows, CancellationToken token = default)
     {
+        return await GetNotSent(MediaType.Photo, id, rows, token);
+    }
+
+    public async Task<List<Data.Media>> GetVideosNotSent(long id, int rows, CancellationToken token = default)
+    {
+        return await GetNotSent(MediaType.Video, id, rows, token);
+    }
+
+    public async Task<List<Data.Media>> GetNotSent(MediaType type, long id, int rows, CancellationToken token = default)
+    {
         return await _messagesContext
             .Medias
             .AsQueryable()
             .Where(x => x.Id > id)
-            .Where(x => x.Type == MediaType.Photo)
+            .Where(x => x.Type == type)
             .Where(x => x.UrlExternal == null || x.UrlExternal == "")
             .OrderBy(x => x.Id)
             .Take(rows)

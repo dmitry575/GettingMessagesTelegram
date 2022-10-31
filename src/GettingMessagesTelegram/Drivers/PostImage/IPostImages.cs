@@ -11,5 +11,5 @@ public interface IPostImages
     /// Sending file to server
     /// </summary>
     /// <param name="media">Information about file</param>
-    Task<PostImagesResult> SendAsync(Data.Media media);
+    Task<UploadResult> SendAsync(Data.Media media);
 }

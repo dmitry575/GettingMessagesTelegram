@@ -10,8 +10,9 @@ src/PublishImage/bin/
 src/PublishImage/obj/
 src/GettingMessagesTelegram/bin/
 src/GettingMessagesTelegram/obj/
-src/GettingMessagesTelegram/bin/
 tests/PublishImage.Tests/bin/
 tests/PublishImage.Tests/obj/
+src/PublishVideo/obj/
+src/PublishVideo/bin/
 WTelegram.session
 publish/

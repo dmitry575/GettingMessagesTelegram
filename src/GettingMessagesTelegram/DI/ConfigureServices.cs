@@ -15,6 +15,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using GettingMessagesTelegram.Drivers.Youtube.Config;
+using GettingMessagesTelegram.Drivers.Youtube;
+using GettingMessagesTelegram.Drivers.Youtube.Impl;
 
 namespace GettingMessagesTelegram.DI;
 
@@ -35,6 +37,7 @@ public static class ConfigureServices
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMediaCreator, MediaCreator>();
         services.AddSingleton<IPostImages, PostImages>();
+        services.AddSingleton<IYouTubeUploader, YouTubeUploader>();
 
         services.AddLogging(configure =>
         {
