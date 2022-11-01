@@ -1,21 +1,19 @@
-﻿using GettingMessagesTelegram.Drivers.PostImage;
+﻿using GettingMessagesTelegram.Drivers.Youtube;
 using Microsoft.Extensions.Hosting;
 
 namespace PublishVideo.Services;
 
-public class PublishVideoService : BackgroundService
+public class PublishService : BackgroundService
 {
-    private readonly IPublishMediaService _publishMediaService;
-    
-    public PublishVideoService(IPublishMediaService publishMediaService)
+    private readonly IPublishVideoService _publishVideoService;
+
+    public PublishService(IPublishVideoService publishVideoService)
     {
-        _publishMediaService = publishMediaService;
-        
+        _publishVideoService = publishVideoService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
-        await _publishMediaService.ExecuteAsync(stoppingToken);
+        await _publishVideoService.ExecuteAsync(stoppingToken);
     }
 }

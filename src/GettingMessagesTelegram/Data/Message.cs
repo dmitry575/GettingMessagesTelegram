@@ -1,6 +1,4 @@
-﻿using GettingMessagesTelegram.DataAccess;
-
-namespace GettingMessagesTelegram.Data;
+﻿namespace GettingMessagesTelegram.Data;
 
 public class Message
 {
@@ -17,7 +15,7 @@ public class Message
     /// <summary>
     /// Group Id for unite message in the one
     /// </summary>
-    public long GroupId { get; set; }
+    public long? GroupId { get; set; }
     
     /// <summary>
     /// Author of message

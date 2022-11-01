@@ -1,20 +1,27 @@
 ﻿using GettingMessagesTelegram.Drivers.PostImage.Impl;
+using GettingMessagesTelegram.Helpers;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
 
 namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
-    public class PublishVideoService: IPublishVideoService
+    public class PublishVideoService : IPublishVideoService
     {
+        private const string Title = "War in Ukrain 2022";
+
         private const int Rows = 20;
         private readonly IMediaService _mediaService;
         private readonly IYouTubeUploader _uploader;
+        private readonly IMessageService _messageService;
         private readonly ILogger<PublishMediaService> _logger;
 
-        public PublishVideoService(IMediaService mediaService, IYouTubeUploader uploader, ILogger<PublishMediaService> logger)
+        public PublishVideoService(IMediaService mediaService, IYouTubeUploader uploader,
+            IMessageService messageService,
+            ILogger<PublishMediaService> logger)
         {
             _mediaService = mediaService;
             _uploader = uploader;
+            _messageService = messageService;
             _logger = logger;
         }
 
@@ -22,7 +29,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         {
             long id = -1;
             var count = 0;
-            while (await _mediaService.GetPhotosNotSent(id, Rows, stoppingToken) is { } videos)
+            while (await _mediaService.GetVideosNotSent(id, Rows, stoppingToken) is { } videos)
             {
                 if (videos.Count <= 0)
                 {
@@ -38,8 +45,17 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                         await _mediaService.Delete(video.Id);
                         continue;
                     }
-                    var result = await _uploader.UploadAsync(video);
-                    if (result)
+
+                    var message = await _messageService.GetById(video.MessageId);
+                    var title = Title;
+                    if (message != null)
+                    {
+                        title = WordHelper.GetSplitByWord(message.Content, 100);
+                    }
+
+
+                    var result = await _uploader.UploadAsync(title, message?.Content, video.LocalPath, stoppingToken);
+                    if (result.Success)
                     {
                         _logger.LogInformation($"video sent to hosting: {video.Id}, url: {result.Url}");
 

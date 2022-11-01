@@ -5,8 +5,9 @@ using System.Reflection;
 using Google.Apis.Auth.OAuth2;
 using GettingMessagesTelegram.Drivers.Youtube.Config;
 using Microsoft.Extensions.Options;
-using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using Microsoft.Extensions.Logging;
+using GettingMessagesTelegram.Drivers.Youtube.Models;
+using Google.Apis.Upload;
 
 namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
@@ -23,7 +24,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
             _logger = logger;
             _config = config.Value;
         }
-        public async Task<bool> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default)
+        public async Task<UploadResult> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default)
         {
             try
             {
@@ -62,16 +63,21 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 
                 var videosInsertRequest =
                     youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
-
+                videosInsertRequest.ResponseReceived += videosInsertRequest_ResponseReceived;
                 var result = await videosInsertRequest.UploadAsync(cancellation);
+                
+                return new UploadResult { Success = result.Status == UploadStatus.Completed };
             }
             catch (Exception e)
             {
                 _logger.LogError($"upload video failed, {fileName}, {title}, {e}");
-                return false;
+                return new UploadResult{Success = false};
             }
 
-            return true;
+            void videosInsertRequest_ResponseReceived(Video video)
+            {
+                Console.WriteLine("Video id '{0}' was successfully uploaded.", video.Id);
+            }
         }
     }
 }

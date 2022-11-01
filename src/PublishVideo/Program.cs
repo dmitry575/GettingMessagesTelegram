@@ -8,6 +8,9 @@ using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Drivers.PostImage;
 using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using Microsoft.EntityFrameworkCore;
+using GettingMessagesTelegram.Drivers.Youtube;
+using GettingMessagesTelegram.Drivers.Youtube.Impl;
+using PublishVideo.Services;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -33,13 +36,17 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(configuration);
 
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
-        services.AddSingleton<IYou, PostImages>();
+        services.AddSingleton<IYouTubeUploader, YouTubeUploader>();
+        services.AddSingleton<IPublishVideoService, PublishVideoService>();
         services.AddSingleton<IMediaService, MediaService>();
+        services.AddSingleton<IMessageService, MessageService>();
+
         services.AddHostedService<PublishService>();
+
     })
     .Build();
 
 
 Console.WriteLine($"Version: {fvi.FileVersion}");
-Console.WriteLine($"Starting the publish images to Postimage.org");
+Console.WriteLine($"Starting the publish videos to youtube.com");
 await host.RunAsync();

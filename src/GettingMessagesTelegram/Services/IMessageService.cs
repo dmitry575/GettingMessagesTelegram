@@ -24,4 +24,10 @@ public interface IMessageService
     /// <param name="channelId">Id channel</param>
     /// <param name="groupId">Group Id of message to telegram</param>
     Task<Message> GetByGroupId(long channelId, long groupId);
+
+    /// <summary>
+    /// Get message by Id
+    /// </summary>
+    /// <param name="id">Id message </param>
+    Task<Message> GetById(long id);
 }

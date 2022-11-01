@@ -1,6 +1,4 @@
-﻿
-using GettingMessagesTelegram.Drivers.PostImage.Models;
-using GettingMessagesTelegram.Drivers.Youtube.Models;
+﻿using GettingMessagesTelegram.Drivers.Youtube.Models;
 
 namespace GettingMessagesTelegram.Drivers.Youtube
 {

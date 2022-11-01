@@ -21,7 +21,7 @@ public interface IMediaService
     /// <summary>
     /// Update url external on hosting
     /// </summary>
-    /// <param name="mediaId">Id mediain database</param>
+    /// <param name="mediaId">Id media database</param>
     /// <param name="urlExternal">New url</param>
     Task UpdateSend(long mediaId, string urlExternal);
 

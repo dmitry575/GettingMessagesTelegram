@@ -42,4 +42,12 @@ public class MessageService : IMessageService
             .Include(x => x.Medias)
             .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.GroupId == groupId);
     }
+
+    public Task<Message> GetById(long id)
+    {
+        return _messagesContext
+            .Messages
+            .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
 }

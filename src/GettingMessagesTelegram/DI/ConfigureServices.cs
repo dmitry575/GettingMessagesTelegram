@@ -37,7 +37,7 @@ public static class ConfigureServices
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMediaCreator, MediaCreator>();
         services.AddSingleton<IPostImages, PostImages>();
-        services.AddSingleton<IYouTubeUploader, YouTubeUploader>();
+        services.AddScoped<IYouTubeUploader, YouTubeUploader>();
 
         services.AddLogging(configure =>
         {
