@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using GettingMessagesTelegram.Drivers.Youtube;
 using GettingMessagesTelegram.Drivers.Youtube.Impl;
 using PublishVideo.Services;
+using GettingMessagesTelegram.Drivers.Youtube.Config;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -33,6 +34,8 @@ using IHost host = Host.CreateDefaultBuilder(args)
         string connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
 
+        services.Configure<YoutubeConfig>(configuration.GetSection("Youtube"));
+        
         services.AddSingleton(configuration);
 
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
