@@ -51,13 +51,16 @@ public class MessageService : IMessageService
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public Task<List<Message>> GetNotTranslate(string language, int page, int countRows)
+    public async Task<List<Message>> GetNotTranslate(string language, int page, int countRows)
     {
-        return _messagesContext
+        return await _messagesContext
             .Messages
             .AsQueryable()
             .Include(x => x.Comments)
-            
-            .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.GroupId == groupId);
+            .Include(x => x.Translates)
+            .Where(x => x.Translates== null || x.Translates.All(t => t.Language != language))
+            .Skip(page * countRows)
+            .Take(countRows)
+            .ToListAsync();
     }
 }

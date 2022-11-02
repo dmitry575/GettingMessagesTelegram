@@ -13,6 +13,10 @@ public class MessagesContext : DbContext
     
     public DbSet<Data.Media> Medias { get; set; }
 
+    public DbSet<MessageTranslate> MessagesTranslates { get; set; }
+
+    public DbSet<CommentTranslate> CommentsTranslates { get; set; }
+
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)
     {
@@ -34,6 +38,8 @@ public class MessagesContext : DbContext
             .ApplyConfiguration(new MessageMap())
             .ApplyConfiguration(new CommentMap())
             .ApplyConfiguration(new MediaMap())
+            .ApplyConfiguration(new MessageTranslateMap())
+            .ApplyConfiguration(new CommentTranslateMap())
             .ConfigureDateTimeToUtc();
     }
 }

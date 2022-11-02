@@ -53,5 +53,5 @@ public class Message
     
     public virtual ICollection<Media> Medias { get; set; }
     
-    public virtual ICollection<Media> Medias { get; set; }
+    public virtual ICollection<MessageTranslate> Translates { get; set; }
 }

@@ -13,7 +13,7 @@ public class CommentMap:IEntityTypeConfiguration<Comment>
         builder.HasKey(p => p.Id);
         builder.Property(b => b.Id).ValueGeneratedOnAdd();
 
-        builder.HasOne<Message>(p => p.Message)
+        builder.HasOne(p => p.Message)
             .WithMany(p => p.Comments)
             .HasForeignKey(x => x.MessageId);
     }
