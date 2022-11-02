@@ -10,6 +10,14 @@ CREATE TABLE IF NOT EXISTS public."Messages"
 "ChannelId" bigint NOT NULL,
 "GroupId" bigint NOT NULL
 );
+CREATE TABLE IF NOT EXISTS public."MessagesTranslates"
+(
+"Id" bigint NOT NULL,
+"MessageId" bigint NOT NULL,
+"Content" text,
+"Language" varchar(5) NOT NULL,
+"DateCreated" timestamp without time zone NOT NULL
+);
 
 
 CREATE TABLE IF NOT EXISTS public."Channels"
@@ -31,6 +39,16 @@ CREATE TABLE IF NOT EXISTS public."Comments"
 "Content" text,
 "DateCreated" timestamp without time zone NOT NULL,
 "MessageId" bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public."CommentsTranslates"
+(
+"Id" bigint NOT NULL,
+"CommentId" bigint NOT NULL,
+"Language" varchar(5) NOT NULL,
+"Content" text,
+"DateCreated" timestamp without time zone NOT NULL
+
 );
 
 CREATE TABLE IF NOT EXISTS public."Medias"
@@ -76,7 +94,32 @@ CREATE SEQUENCE comments_id_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE messages_translates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE messages_translates_id_seq OWNED BY "MessagesTranslates"."Id";
+
+CREATE SEQUENCE comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 ALTER SEQUENCE comments_id_seq OWNED BY "Comments"."Id";
+
+CREATE SEQUENCE comments_translates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE comments_translates_id_seq OWNED BY "Comments"."Id";
 
 CREATE SEQUENCE medias_id_seq
     START WITH 1
@@ -91,7 +134,11 @@ ALTER TABLE ONLY "Channels" ALTER COLUMN "Id" SET DEFAULT nextval('channels_id_s
 
 ALTER TABLE ONLY "Messages" ALTER COLUMN "Id" SET DEFAULT nextval('messages_id_seq'::regclass);
 
+ALTER TABLE ONLY "MessagesTranslates" ALTER COLUMN "Id" SET DEFAULT nextval('messages_translates_id_seq'::regclass);
+
 ALTER TABLE ONLY "Comments" ALTER COLUMN "Id" SET DEFAULT nextval('comments_id_seq'::regclass);
+
+ALTER TABLE ONLY "CommentsTranslates" ALTER COLUMN "Id" SET DEFAULT nextval('comments_translates_id_seq'::regclass);
 
 ALTER TABLE ONLY "Medias" ALTER COLUMN "Id" SET DEFAULT nextval('medias_id_seq'::regclass);
 
@@ -100,7 +147,11 @@ ALTER TABLE ONLY "Channels" ADD CONSTRAINT ix_channels_id PRIMARY KEY ("Id");
 
 ALTER TABLE ONLY "Messages" ADD CONSTRAINT ix_messages_id PRIMARY KEY ("Id");
 
+ALTER TABLE ONLY "MessagesTranslates" ADD CONSTRAINT ix_messages_translates_id PRIMARY KEY ("Id");
+
 ALTER TABLE ONLY "Comments" ADD CONSTRAINT ix_comments_id PRIMARY KEY ("Id");
+
+ALTER TABLE ONLY "CommentsTranslates" ADD CONSTRAINT ix_comments_translates_id PRIMARY KEY ("Id");
 
 ALTER TABLE ONLY "Medias" ADD CONSTRAINT ix_medias_id PRIMARY KEY ("Id");
 
@@ -115,4 +166,7 @@ CREATE INDEX comments_baseid ON "Comments" USING btree ("BaseId");
 
 CREATE INDEX medias_baseid ON "Medias" USING btree ("BaseId");
 
+CREATE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","Id");
+
+CREATE INDEX messages_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
 

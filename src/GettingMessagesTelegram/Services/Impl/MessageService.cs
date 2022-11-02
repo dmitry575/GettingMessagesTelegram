@@ -50,4 +50,14 @@ public class MessageService : IMessageService
             .AsQueryable()
             .FirstOrDefaultAsync(x => x.Id == id);
     }
+
+    public Task<List<Message>> GetNotTranslate(string language, int page, int countRows)
+    {
+        return _messagesContext
+            .Messages
+            .AsQueryable()
+            .Include(x => x.Comments)
+            
+            .FirstOrDefaultAsync(x => x.ChannelId == channelId && x.GroupId == groupId);
+    }
 }
