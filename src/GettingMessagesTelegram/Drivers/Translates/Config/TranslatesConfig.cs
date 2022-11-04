@@ -6,7 +6,7 @@ namespace GettingMessagesTelegram.Drivers.Translates.Config
     /// </summary>
     public class TranslatesConfig
     {
-        public const string FormatSeparate = "--{0}---";
+        public const string FormatSeparate = "---{0}---";
         
         /// <summary>
         /// Source language for messages and comments

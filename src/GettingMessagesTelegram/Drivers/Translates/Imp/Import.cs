@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Drivers.Translates.Config;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
@@ -28,11 +27,10 @@ public class Import : IImport
     public async Task ImportAsync(CancellationToken cancellation = default)
     {
         var page = 0;
-        List<Message> messages;
 
         foreach (var language in _config.DestLanguages)
         {
-            while ((messages = await _messageService.GetNotTranslate(language, page, CountRows)) != null)
+            while (await _messageService.GetNotTranslate(language, page, CountRows) is { } messages)
             {
                 foreach (var message in messages)
                 {

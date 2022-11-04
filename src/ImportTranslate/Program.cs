@@ -5,11 +5,11 @@ using Microsoft.Extensions.Hosting;
 using GettingMessagesTelegram.Services;
 using GettingMessagesTelegram.Services.Impl;
 using GettingMessagesTelegram.DataAccess;
+using ImportTranslate.Services;
 using Microsoft.EntityFrameworkCore;
-using GettingMessagesTelegram.Drivers.Youtube;
-using GettingMessagesTelegram.Drivers.Youtube.Impl;
-using PublishVideo.Services;
-using GettingMessagesTelegram.Drivers.Youtube.Config;
+using GettingMessagesTelegram.Drivers.Translates;
+using GettingMessagesTelegram.Drivers.Translates.Imp;
+using GettingMessagesTelegram.Drivers.Translates.Config;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -31,23 +31,19 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // get connection string to database
         string connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
+        services.Configure<TranslatesConfig>(configuration.GetSection("Translates"));
 
-        services.Configure<YoutubeConfig>(configuration.GetSection("Youtube"));
-        
         services.AddSingleton(configuration);
 
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
-        services.AddSingleton<IYouTubeUploader, YouTubeUploader>();
-        services.AddSingleton<IPublishVideoService, PublishVideoService>();
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMessageService, MessageService>();
-
-        services.AddHostedService<PublishService>();
-
+        services.AddSingleton<IImport, Import>();
+        services.AddHostedService<ImportService>();
     })
     .Build();
 
 
 Console.WriteLine($"Version: {fvi.FileVersion}");
-Console.WriteLine($"Starting the publish videos to youtube.com");
+Console.WriteLine($"Starting the import files for translating");
 await host.RunAsync();

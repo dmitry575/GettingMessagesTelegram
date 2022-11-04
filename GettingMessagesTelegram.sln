@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishImage", "src\Publish
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishImage.Tests", "tests\PublishImage.Tests\PublishImage.Tests.csproj", "{0857163D-8019-409C-9656-4B06DFBBC77E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublishVideo", "src\PublishVideo\PublishVideo.csproj", "{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishVideo", "src\PublishVideo\PublishVideo.csproj", "{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportTranslate", "src\ImportTranslate\ImportTranslate.csproj", "{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

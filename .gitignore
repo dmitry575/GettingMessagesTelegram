@@ -14,5 +14,7 @@ tests/PublishImage.Tests/bin/
 tests/PublishImage.Tests/obj/
 src/PublishVideo/obj/
 src/PublishVideo/bin/
+src/ImportTranslate/obj/
+src/ImportTranslate/bin/
 WTelegram.session
 publish/
