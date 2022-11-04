@@ -51,6 +51,8 @@ public class Import : IImport
 
                     SaveToFile(text.ToString(), language, message.Id, message.Comments.Count);
                 }
+
+                page++;
             }
         }
     }
