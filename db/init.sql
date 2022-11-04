@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public."Messages"
 "ChannelId" bigint NOT NULL,
 "GroupId" bigint NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS public."MessagesTranslates"
 (
 "Id" bigint NOT NULL,
@@ -48,7 +49,6 @@ CREATE TABLE IF NOT EXISTS public."CommentsTranslates"
 "Language" varchar(5) NOT NULL,
 "Content" text,
 "DateCreated" timestamp without time zone NOT NULL
-
 );
 
 CREATE TABLE IF NOT EXISTS public."Medias"
