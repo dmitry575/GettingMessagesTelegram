@@ -168,5 +168,5 @@ CREATE INDEX medias_baseid ON "Medias" USING btree ("BaseId");
 
 CREATE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","Id");
 
-CREATE INDEX messages_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
+CREATE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
 

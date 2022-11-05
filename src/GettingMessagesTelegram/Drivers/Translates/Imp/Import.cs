@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using GettingMessagesTelegram.Drivers.Translates.Config;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
@@ -57,8 +58,21 @@ public class Import : IImport
         }
     }
 
+    private string GetFilename(string language, long messageId, int commentsCount, int page = 0)
+    {
+        return Path.Combine(_config.SourcePath, language, $"{messageId}_{commentsCount}_page_{page}.lng");
+    }
+
+
     private void SaveToFile(string text, string language, long messageId, int commentsCount)
     {
+        var fileName = GetFilename(language, messageId, commentsCount);
+
+        if (File.Exists(fileName))
+        {
+            _logger.LogInformation($"file exists {fileName}");
+            return;
+        }
         if (!Directory.Exists(_config.SourcePath))
         {
             Directory.CreateDirectory(_config.SourceLanguage);
@@ -72,7 +86,7 @@ public class Import : IImport
             _logger.LogInformation($"directory created {path}");
         }
 
-        var fileName = Path.Combine(path, $"{messageId}_{commentsCount}.lng");
+
         File.WriteAllText(fileName, text);
         _logger.LogInformation($"file saved: {fileName} {text.Length} bytes");
     }
