@@ -35,6 +35,13 @@ public class Import : IImport
             {
                 foreach (var message in messages)
                 {
+                    var fileName = GetFilename(language, message.Id, message.CommentCount);
+                    if (File.Exists(fileName))
+                    {
+                        _logger.LogInformation($"file already created: {fileName}");
+                        continue;
+                    }
+
                     var text = new StringBuilder(1024);
 
                     text.Append(message.Content);
