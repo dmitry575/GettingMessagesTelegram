@@ -1,4 +1,5 @@
 ﻿using GettingMessagesTelegram.Data;
+using System.Threading;
 
 namespace GettingMessagesTelegram.Services;
 
@@ -9,12 +10,13 @@ public interface IMessageService
     /// </summary>
     /// <param name="channelId">Id channel</param>
     /// <param name="baseId">Id message to telegram</param>
-    Task<Message> GetByBaseId(long channelId, long baseId);
+    /// <param name="cancellationToken"></param>
+    Task<Message> GetByBaseId(long channelId, long baseId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Replace data
     /// </summary>
-    /// <param name="message">Information fo messsage</param>
+    /// <param name="message">Information for message</param>
     /// <param name="cancellationToken"></param>
     Task<int> ReplaceAsync(Message message, CancellationToken cancellationToken);
 
@@ -23,7 +25,15 @@ public interface IMessageService
     /// </summary>
     /// <param name="channelId">Id channel</param>
     /// <param name="groupId">Group Id of message to telegram</param>
-    Task<Message> GetByGroupId(long channelId, long groupId);
+    /// <param name="cancellationToken"></param>
+    Task<Message> GetByGroupId(long channelId, long groupId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get message by message info into the transaction
+    /// </summary>
+    /// <param name="message">message from telegram</param>
+    /// <param name="cancellationToken"></param>
+    Task<(Message, bool)> GetCreateByMessage(Message message, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get message by Id

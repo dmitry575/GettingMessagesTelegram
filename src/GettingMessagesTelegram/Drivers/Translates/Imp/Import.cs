@@ -33,6 +33,11 @@ public class Import : IImport
         {
             while (await _messageService.GetNotTranslate(language, page, CountRows) is { } messages)
             {
+                if (messages.Count <= 0)
+                {
+                    _logger.LogInformation($"not messages for languaes {language}, page: {page}");
+                    break;
+                }
                 foreach (var message in messages)
                 {
                     var fileName = GetFilename(language, message.Id, message.CommentCount);

@@ -48,7 +48,7 @@ public class MessageProcess : IMessageProcess
     public async Task<(StatusProcess, Message)> Processing(Data.Channel channel, MessageBase message,
         CancellationToken cancellationToken = default)
     {
-        var (status, messageData) = await WorkMessage(channel.Id, message);
+        var (status, messageData) = await WorkMessage(channel.Id, message, cancellationToken);
         switch (status)
         {
             case StatusProcess.Failed:
@@ -157,7 +157,7 @@ public class MessageProcess : IMessageProcess
         return string.Empty;
     }
 
-    private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, MessageBase message)
+    private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, MessageBase message, CancellationToken cancellationToken)
     {
         if (message is not TL.Message m)
         {
@@ -165,36 +165,20 @@ public class MessageProcess : IMessageProcess
             return (StatusProcess.Failed, null);
         }
 
-        var (exists, messageData) = await MessageExists(channelId, m.ID);
-        if (exists)
-        {
-            _logger.LogInformation("found last exists message: " + m.ID + "\t" + m.message + "\t" + m.post_author);
-            messageData.ViewCount = m.views;
-        }
-        else
-        {
-            // check by group id, if message has same group we need add photo and video
-            if (m.grouped_id > 0)
-            {
-                (exists, messageData) = await MessageGroupExists(channelId, m.grouped_id);
-            }
+        // create a new message to database
+        var messageData = m.Map();
+        messageData.ChannelId = channelId;
 
-            if (exists)
-            {
-                _logger.LogInformation("found exists message by group id: " + m.grouped_id + ", message id:" + m.ID +
-                                       "\t" + m.message + "\t" + m.post_author);
-            }
-            else
-            {
-                // create a new message to database
-                messageData = m.Map();
-                messageData.ChannelId = channelId;
-            }
+        (messageData, var exists) = await _messageService.GetCreateByMessage(messageData, cancellationToken);
+
+        if (messageData == null)
+        {
+            _logger.LogInformation("not found and create message by group id: " + m.grouped_id + ", message id:" + m.ID + "\t" + m.message + "\t" + m.post_author);
+            return (StatusProcess.Failed, null);
         }
 
-        _logger.LogInformation(m.ID + "\t" + m.post_author);
+        _logger.LogInformation($"{m.ID} {m.post_author} message id: {messageData.Id}");
 
-        //var messageData = await SaveMessage(m);
 
         var link = UrlHelper.GetTmeUrl(m.message);
         if (!string.IsNullOrEmpty(link))
@@ -213,6 +197,7 @@ public class MessageProcess : IMessageProcess
 
         return (exists ? StatusProcess.Break : StatusProcess.Ok, messageData);
     }
+
 
     /// <summary>
     /// Processing comments for message
@@ -278,21 +263,4 @@ public class MessageProcess : IMessageProcess
         message.CommentCount = message.Comments.Count;
     }
 
-    /// <summary>
-    /// If exists messages
-    /// </summary>
-    private async Task<(bool, Message)> MessageExists(long channelId, long messageId)
-    {
-        var message = await _messageService.GetByBaseId(channelId, messageId);
-        return (message is not null, message);
-    }
-
-    /// <summary>
-    /// If exists messages by group id
-    /// </summary>
-    private async Task<(bool, Message)> MessageGroupExists(long channelId, long groupId)
-    {
-        var message = await _messageService.GetByGroupId(channelId, groupId);
-        return (message is not null, message);
-    }
 }

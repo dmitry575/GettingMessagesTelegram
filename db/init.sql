@@ -156,17 +156,17 @@ ALTER TABLE ONLY "CommentsTranslates" ADD CONSTRAINT ix_comments_translates_id P
 ALTER TABLE ONLY "Medias" ADD CONSTRAINT ix_medias_id PRIMARY KEY ("Id");
 
 
-CREATE INDEX channels_baseid ON "Channels" USING btree ("BaseId");
+CREATE UNIQUE INDEX channels_baseid ON "Channels" USING btree ("BaseId");
 
-CREATE INDEX messages_baseid ON "Messages" USING btree ("BaseId");
+CREATE UNIQUE INDEX messages_baseid ON "Messages" USING btree ("BaseId");
 
 CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId");
 
-CREATE INDEX comments_baseid ON "Comments" USING btree ("BaseId");
+CREATE UNIQUE INDEX comments_baseid ON "Comments" USING btree ("BaseId");
 
-CREATE INDEX medias_baseid ON "Medias" USING btree ("BaseId");
+CREATE UNIQUE INDEX medias_baseid ON "Medias" USING btree ("BaseId");
 
-CREATE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","Id");
+CREATE UNIQUE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","Id");
 
-CREATE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
+CREATE UNIQUE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
 
