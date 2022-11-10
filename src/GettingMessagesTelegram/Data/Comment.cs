@@ -18,6 +18,11 @@ public class Comment
     public string Author { get; set; }
 
     /// <summary>
+    /// Author of message id
+    /// </summary>
+    public long? UserId { get; set; }
+
+    /// <summary>
     /// Content of message
     /// </summary>
     public string Content { get; set; }

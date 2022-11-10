@@ -31,6 +31,7 @@ public static class DataMessage
         {
             BaseId = message.id,
             Author = message.post_author ?? "user " + message.from_id?.ID,
+            UserId = message.from_id?.ID,
             Content = message.message,
             DateCreated = message.Date
         };

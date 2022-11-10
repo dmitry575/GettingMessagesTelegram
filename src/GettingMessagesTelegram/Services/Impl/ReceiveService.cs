@@ -99,7 +99,7 @@ public class ReceiveService : IReceiveService
                             var (status, data) = await _messageProcess.Processing(channelSql, message, cancellationToken);
                             if (status == StatusProcess.Break)
                             {
-                                // set flag what this last circkle
+                                // set flag what this last circle
                                 needBreak = true;
                             }
 
@@ -108,7 +108,7 @@ public class ReceiveService : IReceiveService
                                 lastDate = message.Date;
                                 _logger.LogInformation($"new message: {message.ID} - finished, date: {lastDate.ToString("yyyy.MM.dd")}");
                             }
-                            await Task.Delay(2500);
+                            await Task.Delay(2500, cancellationToken);
                         }
 
                         if (messages.Messages?.Length < MaxRowsInRequest)
@@ -211,29 +211,37 @@ public class ReceiveService : IReceiveService
 
     private async Task ProcessEventMessage(MessageBase message)
     {
-        var channel = _channelsConfig.FirstOrDefault(x => x.Id == message.Peer.ID);
-        if (channel == null)
+        try
         {
-            _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
-            return;
+            var channel = _channelsConfig.FirstOrDefault(x => x.Id == message.Peer.ID);
+            if (channel == null)
+            {
+                _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
+                return;
+            }
+            var channelSql = await _channelsService.CheckAdd(channel.Id, channel.HashAccess, channel.Name);
+            if (channelSql == null)
+            {
+                _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
+                return;
+            }
+
+            var (status, data) = await _messageProcess.Processing(channelSql, message);
+            _logger.LogInformation($"message added or update: {status}, new id: {data?.Id}, base id: {data?.BaseId}");
+
+
+            switch (message)
+            {
+                case TL.MessageService ms:
+                    _logger.LogInformation($"MessageService: from {ms.from_id} to ms.peer_id: [{ms.action.GetType().Name}]");
+                    break;
+            }
         }
-        var channelSql = await _channelsService.CheckAdd(channel.Id, channel.HashAccess, channel.Name);
-        if (channelSql == null)
+        catch (Exception e)
         {
-            _logger.LogInformation($"message from unknown channel: {message.Peer.ID}, {message.Date}");
-            return;
+            _logger.LogError($"MessageService: message {message.ID}  failed processing, {e}");
         }
 
-        var (status, data) = await _messageProcess.Processing(channelSql, message);
-        _logger.LogInformation($"message added or update: {status}, new id: {data?.Id}, base id: {data?.BaseId}");
-
-
-        switch (message)
-        {
-            case TL.MessageService ms:
-                _logger.LogInformation($"MessageService: from {ms.from_id} to ms.peer_id: [{ms.action.GetType().Name}]");
-                break;
-        }
     }
 
     private async Task PrintAllChats()

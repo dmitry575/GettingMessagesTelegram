@@ -17,7 +17,6 @@ public class MessageProcess : IMessageProcess
 {
     private readonly ILogger<MessageProcess> _logger;
     private readonly IMessageService _messageService;
-    private readonly IMediaService _mediaService;
 
     /// <summary>
     /// Max of rows in one requests for pagination
@@ -35,12 +34,11 @@ public class MessageProcess : IMessageProcess
 
 
     public MessageProcess(IMessageService messageService, ILogger<MessageProcess> logger, Client clientTelegram,
-        IMediaService mediaService, IMediaCreator mediaCreator, IOptions<DownloadConfig> downloadConfig)
+        IMediaCreator mediaCreator, IOptions<DownloadConfig> downloadConfig)
     {
         _messageService = messageService;
         _logger = logger;
         _clientTelegram = clientTelegram;
-        _mediaService = mediaService;
         _mediaCreator = mediaCreator;
         _downloadConfig = downloadConfig.Value;
     }
@@ -223,15 +221,22 @@ public class MessageProcess : IMessageProcess
                     var c = message.Comments?.FirstOrDefault(x => x.BaseId == comment.ID);
                     if (c is null)
                     {
-                        c = (comment as TL.Message)?.MapToComment();
-                        if (c != null)
+                        var commentTelegram = comment as TL.Message;
+                        if (commentTelegram == null)
                         {
+                            _logger.LogWarning($"found not message type, waiting comment: {comment.ID}");
+                        }
+
+                        
+                        c = commentTelegram.MapToComment();
+                        
+
                             if (string.IsNullOrEmpty(c.Author))
                             {
                                 _logger.LogInformation($"comment has author is null: message id: {message.BaseId}, channel: {message.ChannelId}");
                             }
                             message.Comments.Add(c);
-                        }
+                        
                     }
                 }
 

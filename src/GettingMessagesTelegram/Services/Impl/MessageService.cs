@@ -56,24 +56,27 @@ public class MessageService : IMessageService
                 return (m, true);
             }
 
-            if (message.GroupId.HasValue)
+            if (message.GroupId.HasValue && message.GroupId > 0)
             {
                 m = await GetByGroupId(message.ChannelId, message.GroupId.Value, cancellationToken);
-                m.ViewCount = message.ViewCount;
-                return (m, false);
+                if (m != null)
+                {
+                    m.ViewCount = message.ViewCount;
+                    return (m, false);
+                }
             }
 
             await ReplaceAsync(message, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            return (message, false);
         }
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
-
-        return (null, false);
     }
 
     public Task<Message> GetById(long id)

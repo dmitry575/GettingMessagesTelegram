@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public."Comments"
 "Id" bigint NOT NULL,
 "BaseId" bigint NOT NULL,
 "Author" varchar(120) NOT NULL,
+"UserId" bigint,
 "Content" text,
 "DateCreated" timestamp without time zone NOT NULL,
 "MessageId" bigint NOT NULL
@@ -158,15 +159,15 @@ ALTER TABLE ONLY "Medias" ADD CONSTRAINT ix_medias_id PRIMARY KEY ("Id");
 
 CREATE UNIQUE INDEX channels_baseid ON "Channels" USING btree ("BaseId");
 
-CREATE UNIQUE INDEX messages_baseid ON "Messages" USING btree ("BaseId");
+CREATE UNIQUE INDEX messages_baseid ON "Messages" USING btree ("BaseId", "ChannelId");
 
-CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId");
+CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId", "MessageId");
 
-CREATE UNIQUE INDEX comments_baseid ON "Comments" USING btree ("BaseId");
+CREATE UNIQUE INDEX comments_baseid ON "Comments" USING btree ("BaseId", "MessageId");
 
-CREATE UNIQUE INDEX medias_baseid ON "Medias" USING btree ("BaseId");
+CREATE UNIQUE INDEX medias_baseid ON "Medias" USING btree ("BaseId", "MessageId");
 
-CREATE UNIQUE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","Id");
+CREATE UNIQUE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","MessageId");
 
-CREATE UNIQUE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","Id");
+CREATE UNIQUE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","CommentId");
 
