@@ -35,7 +35,7 @@ public class Import : IImport
             {
                 if (messages.Count <= 0)
                 {
-                    _logger.LogInformation($"not messages for languaes {language}, page: {page}");
+                    _logger.LogInformation($"not messages for languages {language}, page: {page}");
                     break;
                 }
                 foreach (var message in messages)
@@ -75,7 +75,9 @@ public class Import : IImport
         return Path.Combine(_config.SourcePath, language, $"{messageId}_{commentsCount}_page_{page}.lng");
     }
 
-
+    /// <summary>
+    /// Saving content to file
+    /// </summary>
     private void SaveToFile(string text, string language, long messageId, int commentsCount)
     {
         var fileName = GetFilename(language, messageId, commentsCount);
@@ -85,11 +87,11 @@ public class Import : IImport
             _logger.LogInformation($"file exists {fileName}");
             return;
         }
-        if (!Directory.Exists(_config.SourcePath))
-        {
-            Directory.CreateDirectory(_config.SourceLanguage);
-            _logger.LogInformation($"directory created {_config.SourceLanguage}");
-        }
+        //if (!Directory.Exists(_config.SourcePath))
+        //{
+        //    Directory.CreateDirectory(_config.SourceLanguage);
+        //    _logger.LogInformation($"directory created {_config.SourceLanguage}");
+        //}
 
         var path = Path.Combine(_config.SourcePath, language);
         if (!Directory.Exists(path))
@@ -99,7 +101,10 @@ public class Import : IImport
         }
 
 
-        File.WriteAllText(fileName, text);
-        _logger.LogInformation($"file saved: {fileName} {text.Length} bytes");
+        if (fileName != null)
+        {
+            File.WriteAllText(fileName, text);
+            _logger.LogInformation($"file saved: {fileName} {text.Length} bytes");
+        }
     }
 }
