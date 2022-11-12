@@ -8,13 +8,16 @@ public static class DataMessage
     /// Mapping data
     /// </summary>
     /// <param name="message">Message from telegram</param>
-    public static Data.Message Map(this Message message)
+    /// <param name="defaultAuthor">Default name of message. Message without author must not exists</param>
+    /// <param name="channelId">Channel id</param>
+    public static Data.Message Map(this Message message, string defaultAuthor, long channelId)
     {
         return new Data.Message
         {
+            ChannelId = channelId,
             BaseId = message.id,
             GroupId = message.grouped_id,
-            Author = message.post_author,
+            Author = string.IsNullOrEmpty(message.post_author) ? defaultAuthor : message.post_author,
             Content = message.message,
             DateCreated = message.Date,
             ViewCount = message.views

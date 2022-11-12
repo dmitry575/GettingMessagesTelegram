@@ -96,7 +96,7 @@ public class ReceiveService : IReceiveService
                         {
                             _logger.LogInformation($"new message: {message.ID} - start");
 
-                            var (status, data) = await _messageProcess.Processing(channelSql, message, cancellationToken);
+                            var (status, _) = await _messageProcess.Processing(channelSql, message, cancellationToken);
                             if (status == StatusProcess.Break)
                             {
                                 // set flag what this last circle

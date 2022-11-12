@@ -46,7 +46,7 @@ public class MessageProcess : IMessageProcess
     public async Task<(StatusProcess, Message)> Processing(Data.Channel channel, MessageBase message,
         CancellationToken cancellationToken = default)
     {
-        var (status, messageData) = await WorkMessage(channel.Id, message, cancellationToken);
+        var (status, messageData) = await WorkMessage(channel.Id, channel.Author, message, cancellationToken);
         switch (status)
         {
             case StatusProcess.Failed:
@@ -130,9 +130,19 @@ public class MessageProcess : IMessageProcess
                 _logger.LogInformation($"downloaded video file {document.ID} to {filename}");
                 return filename;
             }
-            catch (Exception e)
+
+            catch (ApplicationException e)
             {
-                _logger.LogError($"downloading file failed: id {document.ID}, {filename}, {e}");
+                _logger.LogError($"error downloading media: {filename}, {document.ID} {e}");
+                await _clientTelegram.ConnectAsync();
+            }
+            catch (RpcException e)
+            {
+                _logger.LogError($"error downloading media: {filename}, {document.ID}, {e.Source}, {e.TargetSite}, {e}");
+                if (e.Code == 401)
+                {
+                    await _clientTelegram.LoginUserIfNeeded();
+                }
             }
         }
         else if (media is MessageMediaPhoto { photo: Photo photo })
@@ -155,7 +165,7 @@ public class MessageProcess : IMessageProcess
         return string.Empty;
     }
 
-    private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, MessageBase message, CancellationToken cancellationToken)
+    private async Task<(StatusProcess status, Message messageData)> WorkMessage(long channelId, string channelAuthor, MessageBase message, CancellationToken cancellationToken)
     {
         if (message is not TL.Message m)
         {
@@ -164,8 +174,7 @@ public class MessageProcess : IMessageProcess
         }
 
         // create a new message to database
-        var messageData = m.Map();
-        messageData.ChannelId = channelId;
+        var messageData = m.Map(channelAuthor, channelId);
 
         (messageData, var exists) = await _messageService.GetCreateByMessage(messageData, cancellationToken);
 
@@ -227,16 +236,16 @@ public class MessageProcess : IMessageProcess
                             _logger.LogWarning($"found not message type, waiting comment: {comment.ID}");
                         }
 
-                        
-                        c = commentTelegram.MapToComment();
-                        
 
-                            if (string.IsNullOrEmpty(c.Author))
-                            {
-                                _logger.LogInformation($"comment has author is null: message id: {message.BaseId}, channel: {message.ChannelId}");
-                            }
-                            message.Comments.Add(c);
-                        
+                        c = commentTelegram.MapToComment();
+
+
+                        if (string.IsNullOrEmpty(c.Author))
+                        {
+                            _logger.LogInformation($"comment has author is null: message id: {message.BaseId}, channel: {message.ChannelId}");
+                        }
+                        message.Comments.Add(c);
+
                     }
                 }
 

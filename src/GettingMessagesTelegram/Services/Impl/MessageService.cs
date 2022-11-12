@@ -53,15 +53,23 @@ public class MessageService : IMessageService
             if (m is not null)
             {
                 m.ViewCount = message.ViewCount;
+                if (string.IsNullOrEmpty(m.Content) && !string.IsNullOrEmpty(message.Content) && message.Content.Length > 2)
+                {
+                    m.Content = message.Content;
+                }
                 return (m, true);
             }
 
-            if (message.GroupId.HasValue && message.GroupId > 0)
+            if (message.GroupId is > 0)
             {
                 m = await GetByGroupId(message.ChannelId, message.GroupId.Value, cancellationToken);
                 if (m != null)
                 {
                     m.ViewCount = message.ViewCount;
+                    if (string.IsNullOrEmpty(m.Content) && !string.IsNullOrEmpty(message.Content) && message.Content.Length > 2)
+                    {
+                        m.Content = message.Content;
+                    }
                     return (m, false);
                 }
             }
