@@ -14,6 +14,11 @@ public class Import : IImport
     /// </summary>
     private const int CountRows = 100;
 
+    /// <summary>
+    /// Max file size for translating
+    /// </summary>
+    private const int MaxFilesize = 3000;
+
     private readonly IMessageService _messageService;
     private readonly TranslatesConfig _config;
     private readonly ILogger<Import> _logger;
@@ -31,42 +36,53 @@ public class Import : IImport
 
         foreach (var language in _config.DestLanguages)
         {
+            _logger.LogInformation($"processing messages for languages {language}");
+
             while (await _messageService.GetNotTranslate(language, page, CountRows) is { } messages)
             {
                 if (messages.Count <= 0)
                 {
-                    _logger.LogInformation($"not messages for languages {language}, page: {page}");
+                    _logger.LogInformation($"not messages for language {language}, page: {page}");
                     break;
                 }
                 foreach (var message in messages)
                 {
-                    var fileName = GetFilename(language, message.Id, message.CommentCount);
-                    if (File.Exists(fileName))
-                    {
-                        _logger.LogInformation($"file already created: {fileName}");
-                        continue;
-                    }
-
                     var text = new StringBuilder(1024);
 
                     text.Append(message.Content);
                     text.Append("\r\n\r\n");
                     text.AppendFormat(TranslatesConfig.FormatSeparate, message.Id);
                     text.Append("\r\n\r\n ");
-
+                    
+                    var commentPage = 0;
+                    var commentsCount = 0;
                     foreach (var messageComment in message.Comments)
                     {
                         text.Append(messageComment.Content);
                         text.Append("\r\n\r\n");
                         text.AppendFormat(TranslatesConfig.FormatSeparate, messageComment.Id);
                         text.Append("\r\n\r\n ");
+                        commentsCount++;
+
+                        if (text.Length > MaxFilesize)
+                        {
+                            SaveToFile(text.ToString(), language, message.Id, commentsCount, commentPage);
+                            text.Append("\r\n\r\n ");
+                            text.Clear();
+                            commentPage++;
+                        }
                     }
 
-                    SaveToFile(text.ToString(), language, message.Id, message.Comments.Count);
+                    if (text.Length > 0)
+                    {
+                        SaveToFile(text.ToString(), language, message.Id, commentsCount, commentPage);
+                    }
                 }
 
                 page++;
             }
+
+            _logger.LogInformation($"process messages for languages {language} finished");
         }
     }
 
@@ -78,15 +94,15 @@ public class Import : IImport
     /// <summary>
     /// Saving content to file
     /// </summary>
-    private void SaveToFile(string text, string language, long messageId, int commentsCount)
+    private void SaveToFile(string text, string language, long messageId, int commentsCount, int page)
     {
-        var fileName = GetFilename(language, messageId, commentsCount);
+        var fileName = GetFilename(language, messageId, commentsCount, page);
 
-        if (File.Exists(fileName))
-        {
-            _logger.LogInformation($"file exists {fileName}");
-            return;
-        }
+        //if (File.Exists(fileName))
+        //{
+        //    _logger.LogInformation($"file exists {fileName}");
+        //    return;
+        //}
         //if (!Directory.Exists(_config.SourcePath))
         //{
         //    Directory.CreateDirectory(_config.SourceLanguage);

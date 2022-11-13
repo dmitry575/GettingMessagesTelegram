@@ -13,6 +13,8 @@ public class Export : IExport
     private readonly ILogger<Export> _logger;
     private readonly TranslatesConfig _config;
 
+    private readonly Regex _regexFilename = new Regex(@"(?<messageid>\d)+_(?<commentscount>\d)+_page_(?<page>\d)+\.lng");
+
     public Export(IOptions<TranslatesConfig> config, IMessageService messageService, ILogger<Export> logger)
     {
         _messageService = messageService;
@@ -39,8 +41,55 @@ public class Export : IExport
         string[] files = Directory.GetFiles(path);
         foreach (string file in files)
         {
-            await ProcessFileTranslate(file);
+            if (_regexFilename.IsMatch(file))
+            {
+                var match = _regexFilename.Match(file);
+
+                if (!long.TryParse(match.Groups["messageid"].Value, out var messageId))
+                {
+                    _logger.LogWarning($"Export: invalid message id in filename: {file}, value: {match.Groups["messageid"].Value}");
+                    continue;
+                }
+
+                if (!long.TryParse(match.Groups["commentscount"].Value, out var commentsCount))
+                {
+                    _logger.LogWarning($"Export: invalid message comments count in filename: {file}, value: {match.Groups["commentscount"].Value}");
+                    continue;
+                }
+
+                if (!int.TryParse(match.Groups["page"].Value, out var page))
+                {
+                    _logger.LogWarning($"Export: invalid message page in filename: {file}, value: {match.Groups["page"].Value}");
+                    continue;
+                }
+
+                await ProcessFileTranslate(language,file, messageId, commentsCount, page);
+            }
         }
+    }
+
+    private async Task ProcessFileTranslate(string language, string filename, long messageId, long commentsCount, int page)
+    {
+        var content = await File.ReadAllTextAsync(filename);
+
+        // cleaning after translate
+        content = CleanSeparateString(content);
+
+        var collections = Regex.Split(content, TranslatesConfig.FormatSeparate, RegexOptions.Singleline)
+            .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+
+        _logger.LogInformation($"Export: {filename} loaded rows: {collections.Count}");
+
+        // check correct after translate
+
+        var count = page == 0 ? collections.Count - 1 : collections.Count;
+
+        if (count != commentsCount)
+        {
+            _logger.LogInformation($"Export: {filename} has invalid count of comments need {commentsCount}, but exists: {count}. Check cleaning after translating");
+            return;
+        }
+
     }
 
     /// <summary>
@@ -63,12 +112,6 @@ public class Export : IExport
         if (regexComment.IsMatch(content))
         {
             content = regexComment.Replace(content, ProcessSpace);
-        }
-
-        Regex regexpoint = new Regex(@"[\-\.]+121[\-\.]+[\d]+(\.)");
-        if (regexpoint.IsMatch(content))
-        {
-            content = regexpoint.Replace(content, ProcessPoint);
         }
 
         Regex firstpoint = new Regex(@"[\-][\-\.\]\?\s]*[\d]+[\-\s]*");
