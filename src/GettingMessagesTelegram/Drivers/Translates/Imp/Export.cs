@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using GettingMessagesTelegram.Drivers.Translates.Config;
 using GettingMessagesTelegram.Services;
-using Google.Apis.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -9,28 +8,34 @@ namespace GettingMessagesTelegram.Drivers.Translates.Imp;
 
 public class Export : IExport
 {
-    private readonly IMessageService _messageService;
+    private readonly IMessageTranslateService _messageTranslateService;
+    private readonly ICommentTranslateService _commentTranslateService;
     private readonly ILogger<Export> _logger;
     private readonly TranslatesConfig _config;
 
     private readonly Regex _regexFilename = new Regex(@"(?<messageid>\d)+_(?<commentscount>\d)+_page_(?<page>\d)+\.lng");
 
-    public Export(IOptions<TranslatesConfig> config, IMessageService messageService, ILogger<Export> logger)
+    public Export(IOptions<TranslatesConfig> config, IMessageService messageService, ILogger<Export> logger, IMessageTranslateService messageTranslateService, ICommentTranslateService commentTranslateService)
     {
-        _messageService = messageService;
-        _logger = logger;
+        _messageTranslateService = messageTranslateService;
+        _commentTranslateService = commentTranslateService;
         _config = config.Value;
+        _logger = logger;
+
     }
 
     public async Task ExportAsync(CancellationToken cancellation = default)
     {
         foreach (var language in _config.DestLanguages)
         {
-            await ProcessLanguage(language);
+            await ProcessLanguage(language, cancellation);
         }
     }
 
-    private async Task ProcessLanguage(string language)
+    /// <summary>
+    /// Process replace information language
+    /// </summary>
+    private async Task ProcessLanguage(string language, CancellationToken cancellation)
     {
         var path = GetPath(language);
         if (!Directory.Exists(path))
@@ -63,26 +68,28 @@ public class Export : IExport
                     continue;
                 }
 
-                await ProcessFileTranslate(language,file, messageId, commentsCount, page);
+                await ProcessFileTranslate(language, file, messageId, commentsCount, page, cancellation);
             }
         }
     }
 
-    private async Task ProcessFileTranslate(string language, string filename, long messageId, long commentsCount, int page)
+    private async Task ProcessFileTranslate(string language, string filename, long messageId, long commentsCount, int page, CancellationToken cancellation)
     {
         var content = await File.ReadAllTextAsync(filename);
 
         // cleaning after translate
         content = CleanSeparateString(content);
 
-        var collections = Regex.Split(content, TranslatesConfig.FormatSeparate, RegexOptions.Singleline)
-            .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        var collections =
+            Regex.Split(content, TranslatesConfig.FormatSeparate, RegexOptions.Singleline)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
 
         _logger.LogInformation($"Export: {filename} loaded rows: {collections.Count}");
 
         // check correct after translate
 
-        var count = page == 0 ? collections.Count - 1 : collections.Count;
+        var count = page == 0 ? (collections.Count - 1) / 2 : collections.Count / 2;
 
         if (count != commentsCount)
         {
@@ -90,6 +97,32 @@ public class Export : IExport
             return;
         }
 
+        await ProcessSaveTranslate(language, messageId, page, collections, cancellation);
+    }
+
+    /// <summary>
+    /// Save translates of message and comments
+    /// </summary>
+    private async Task ProcessSaveTranslate(string language, long messageId, int page, List<string> collections, CancellationToken cancellation)
+    {
+        var i = 0;
+        if (page == 0)
+        {
+            await _messageTranslateService.ReplaceTranslateAsync(messageId, collections[0].Trim(), language, cancellation);
+            i = 1;
+        }
+
+        for (; i < collections.Count; i++)
+        {
+            var translatedContent = collections[i].Trim();
+            var s = collections[i + 1];
+            if (!int.TryParse(s, out int id))
+            {
+                continue;
+            }
+
+            await _commentTranslateService.ReplaceTranslateAsync(id, translatedContent, language, cancellation);
+        }
     }
 
     /// <summary>

@@ -32,10 +32,9 @@ public class Import : IImport
 
     public async Task ImportAsync(CancellationToken cancellation = default)
     {
-        var page = 0;
-
         foreach (var language in _config.DestLanguages)
         {
+            var page = 0;
             _logger.LogInformation($"processing messages for languages {language}");
 
             while (await _messageService.GetNotTranslate(language, page, CountRows) is { } messages)
@@ -53,7 +52,7 @@ public class Import : IImport
                     text.Append("\r\n\r\n");
                     text.AppendFormat(TranslatesConfig.FormatSeparate, message.Id);
                     text.Append("\r\n\r\n ");
-                    
+
                     var commentPage = 0;
                     var commentsCount = 0;
                     foreach (var messageComment in message.Comments)
