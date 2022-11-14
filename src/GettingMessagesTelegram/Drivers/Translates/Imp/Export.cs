@@ -13,9 +13,9 @@ public class Export : IExport
     private readonly ILogger<Export> _logger;
     private readonly TranslatesConfig _config;
 
-    private readonly Regex _regexFilename = new Regex(@"(?<messageid>\d)+_(?<commentscount>\d)+_page_(?<page>\d)+\.lng");
+    private readonly Regex _regexFilename = new Regex(@"(?<messageid>\d+)_(?<commentscount>\d+)_page_(?<page>\d+)\.lng");
 
-    public Export(IOptions<TranslatesConfig> config, IMessageService messageService, ILogger<Export> logger, IMessageTranslateService messageTranslateService, ICommentTranslateService commentTranslateService)
+    public Export(IOptions<TranslatesConfig> config, ILogger<Export> logger, IMessageTranslateService messageTranslateService, ICommentTranslateService commentTranslateService)
     {
         _messageTranslateService = messageTranslateService;
         _commentTranslateService = commentTranslateService;
@@ -75,13 +75,13 @@ public class Export : IExport
 
     private async Task ProcessFileTranslate(string language, string filename, long messageId, long commentsCount, int page, CancellationToken cancellation)
     {
-        var content = await File.ReadAllTextAsync(filename);
+        var content = await File.ReadAllTextAsync(filename, cancellation);
 
         // cleaning after translate
         content = CleanSeparateString(content);
 
         var collections =
-            Regex.Split(content, TranslatesConfig.FormatSeparate, RegexOptions.Singleline)
+            Regex.Split(content, TranslatesConfig.FindSeparate, RegexOptions.IgnoreCase)
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToList();
 
@@ -89,7 +89,7 @@ public class Export : IExport
 
         // check correct after translate
 
-        var count = page == 0 ? (collections.Count - 1) / 2 : collections.Count / 2;
+        var count = page == 0 ? (collections.Count - 2) / 2 : collections.Count / 2;
 
         if (count != commentsCount)
         {

@@ -16,6 +16,8 @@ src/PublishVideo/obj/
 src/PublishVideo/bin/
 src/ImportTranslate/obj/
 src/ImportTranslate/bin/
+src/ExportTranslate/obj/
+src/ExportTranslate/bin/
 WTelegram.session
 publish/
 GettingMessagesTelegram.sln.DotSettings.user

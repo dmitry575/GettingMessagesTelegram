@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using GettingMessagesTelegram.Config;
+﻿using GettingMessagesTelegram.Config;
 using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using GettingMessagesTelegram.Drivers.PostImage;
@@ -53,7 +52,7 @@ public static class ConfigureServices
         services.Configure<DownloadConfig>(configuration.GetSection("Download"));
         services.Configure<TranslatesConfig>(configuration.GetSection("Translates"));
         services.Configure<YoutubeConfig>(configuration.GetSection("Youtube"));
-        //services.Configure<ChannelsConfig>(options => configuration.GetSection("Channels").Bind(options));
+        
         return services;
     }
 }

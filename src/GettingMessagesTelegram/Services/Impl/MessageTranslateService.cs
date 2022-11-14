@@ -11,8 +11,7 @@ public class MessageTranslateService : IMessageTranslateService
     {
         _messagesContext = messagesContext;
     }
-
-
+    
     public async Task ReplaceTranslateAsync(long messageId, string content, string language, CancellationToken cancellationToken)
     {
         var message = await _messagesContext.MessagesTranslates

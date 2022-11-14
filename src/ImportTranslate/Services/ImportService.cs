@@ -1,5 +1,4 @@
-﻿using GettingMessagesTelegram.Drivers.PostImage;
-using GettingMessagesTelegram.Drivers.Translates;
+﻿using GettingMessagesTelegram.Drivers.Translates;
 using Microsoft.Extensions.Hosting;
 
 namespace ImportTranslate.Services;

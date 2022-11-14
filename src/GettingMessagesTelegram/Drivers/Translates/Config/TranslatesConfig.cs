@@ -7,7 +7,9 @@ namespace GettingMessagesTelegram.Drivers.Translates.Config
     public class TranslatesConfig
     {
         public const string FormatSeparate = "---{0}---";
-        
+
+        public const string FindSeparate = "---([0-9]+)---";
+
         /// <summary>
         /// Source language for messages and comments
         /// </summary>
