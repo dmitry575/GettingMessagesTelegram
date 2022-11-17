@@ -36,6 +36,9 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IMediaService, MediaService>();
+        services.AddSingleton<IPublishMediaService, PublishMediaService>();
+        services.AddSingleton<IPostImages, PostImages>();
+        
         services.AddHostedService<PublishService>();
     })
     .Build();
