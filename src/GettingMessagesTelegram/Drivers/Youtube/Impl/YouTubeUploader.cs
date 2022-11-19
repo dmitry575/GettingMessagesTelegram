@@ -12,13 +12,19 @@ using Google.Apis.Upload;
 namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
     /// <summary>
-    /// upload video to youtube channel
+    /// Upload video to youtube channel
+    /// Not thread safe
     /// </summary>
     public class YouTubeUploader : IYouTubeUploader
     {
+        /// <summary>
+        /// Url to youtube
+        /// </summary>
+        private const string YoutubeUrl = "https://youtu.be/";
+
         private readonly ILogger<YouTubeUploader> _logger;
         private readonly YoutubeConfig _config;
-
+        private string _videoId = string.Empty;
         public YouTubeUploader(IOptions<YoutubeConfig> config, ILogger<YouTubeUploader> logger)
         {
             _logger = logger;
@@ -26,10 +32,16 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         }
         public async Task<UploadResult> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default)
         {
+            _videoId = string.Empty;
+
             try
             {
                 var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    new ClientSecrets { ClientId = _config.ClientId, ClientSecret = _config.ClientSecret },
+                    new ClientSecrets
+                    {
+                        ClientId = _config.ClientId,
+                        ClientSecret = _config.ClientSecret
+                    },
                     // This OAuth 2.0 access scope allows an application to upload files to the
                     // authenticated user's YouTube channel, but doesn't allow other types of access.
                     new[] { YouTubeService.Scope.YoutubeUpload },
@@ -59,25 +71,48 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 };
 
 
-                using var fileStream = new FileStream(fileName, FileMode.Open);
-                
+                await using var fileStream = new FileStream(fileName, FileMode.Open);
+
                 var videosInsertRequest =
                     youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
-                videosInsertRequest.ResponseReceived += videosInsertRequest_ResponseReceived;
+
+                videosInsertRequest.ResponseReceived += VideosInsertRequestResponseReceived;
+                videosInsertRequest.ProgressChanged += VideosInsertRequestProgressChanged;
+
                 var result = await videosInsertRequest.UploadAsync(cancellation);
-                
-                return new UploadResult { Success = result.Status == UploadStatus.Completed };
+
+                return new UploadResult
+                {
+                    Success = result.Status == UploadStatus.Completed,
+                    Url = YoutubeUrl + _videoId
+                };
             }
             catch (Exception e)
             {
                 _logger.LogError($"upload video failed, {fileName}, {title}, {e}");
-                return new UploadResult{Success = false};
+                return new UploadResult { Success = false };
             }
 
-            void videosInsertRequest_ResponseReceived(Video video)
+            void VideosInsertRequestResponseReceived(Video video)
             {
-                Console.WriteLine("Video id '{0}' was successfully uploaded.", video.Id);
+                _logger.LogInformation($"Video id '{video.Id}' was successfully uploaded");
+                _videoId = video.Id;
             }
+
+            void VideosInsertRequestProgressChanged(IUploadProgress progress)
+            {
+                switch (progress.Status)
+                {
+                    case UploadStatus.Uploading:
+                        _logger.LogInformation($"{progress.BytesSent} bytes sent.");
+                        break;
+
+                    case UploadStatus.Failed:
+                        _logger.LogInformation($"An error prevented the upload from completing, {progress.Exception}");
+                        break;
+                }
+            }
+
         }
     }
 }

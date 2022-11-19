@@ -9,6 +9,11 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
     {
         private const string Title = "War in Ukrain 2022";
 
+        /// <summary>
+        /// Url to youtube
+        /// </summary>
+        private const string YoutubeUrl = "https://youtu.be/";
+
         private const int Rows = 20;
         private readonly IMediaService _mediaService;
         private readonly IYouTubeUploader _uploader;
