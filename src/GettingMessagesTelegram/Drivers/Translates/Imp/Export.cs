@@ -91,6 +91,11 @@ public class Export : IExport
         _logger.LogInformation($"Export: {filename} loaded rows: {collections.Count}");
 
         // check correct after translate
+        if (collections.Count % 2 != 0)
+        {
+            _logger.LogInformation($"Export: {filename} invalid counts: {collections.Count}, must be div to 2");
+            return;
+        }
 
         var count = page == 0 ? (collections.Count - 2) / 2 : collections.Count / 2;
 
