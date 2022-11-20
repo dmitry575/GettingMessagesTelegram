@@ -1,5 +1,4 @@
 ﻿using GettingMessagesTelegram.Data;
-using System.Threading;
 
 namespace GettingMessagesTelegram.Services;
 
@@ -39,7 +38,8 @@ public interface IMessageService
     /// Get message by Id
     /// </summary>
     /// <param name="id">Id message </param>
-    Task<Message> GetById(long id);
+    /// <param name="withTranslates">With translates messages</param>
+    Task<Message> GetById(long id, bool withTranslates = false);
 
     /// <summary>
     /// Get not translate messages

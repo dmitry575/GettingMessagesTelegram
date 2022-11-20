@@ -87,12 +87,17 @@ public class MessageService : IMessageService
         }
     }
 
-    public Task<Message> GetById(long id)
+    public Task<Message> GetById(long id, bool withTranslates = false)
     {
-        return _messagesContext
+        var query = _messagesContext
             .Messages
-            .AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .AsQueryable();
+        if (withTranslates)
+        {
+            query = query.Include(x => x.Translates);
+        }
+
+        return query.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<List<Message>> GetNotTranslate(string language, int page, int countRows)

@@ -14,7 +14,6 @@ public class ExportService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
         await _exportMediaService.ExportAsync(stoppingToken);
     }
 }

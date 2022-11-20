@@ -69,6 +69,7 @@ public class Import : IImport
                             text.Append("\r\n\r\n ");
                             text.Clear();
                             commentPage++;
+                            commentsCount = 0;
                         }
                     }
 

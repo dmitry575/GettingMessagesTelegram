@@ -1,4 +1,6 @@
-﻿using GettingMessagesTelegram.Drivers.PostImage.Impl;
+﻿using System.Text;
+using GettingMessagesTelegram.Data;
+using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using GettingMessagesTelegram.Helpers;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
@@ -7,26 +9,26 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
     public class PublishVideoService : IPublishVideoService
     {
-        private const string Title = "War in Ukrain 2022";
+        /// <summary>
+        /// Default title of videos
+        /// </summary>
+        private const string DefaultTitle = "War in Ukrain 2022";
 
         /// <summary>
-        /// Url to youtube
+        /// Default language fro title of video
         /// </summary>
-        private const string YoutubeUrl = "https://youtu.be/";
+        private const string DefaultLanguage = "en";
 
         private const int Rows = 20;
         private readonly IMediaService _mediaService;
         private readonly IYouTubeUploader _uploader;
-        private readonly IMessageService _messageService;
         private readonly ILogger<PublishMediaService> _logger;
 
         public PublishVideoService(IMediaService mediaService, IYouTubeUploader uploader,
-            IMessageService messageService,
             ILogger<PublishMediaService> logger)
         {
             _mediaService = mediaService;
             _uploader = uploader;
-            _messageService = messageService;
             _logger = logger;
         }
 
@@ -51,15 +53,16 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                         continue;
                     }
 
-                    var message = await _messageService.GetById(video.MessageId);
-                    var title = Title;
-                    if (message != null)
+                    var title = DefaultTitle;
+                    var description = string.Empty;
+                    if (video.Message != null)
                     {
-                        title = WordHelper.GetSplitByWord(message.Content, 100);
+                        title = WordHelper.GetSplitByWord(GetTitle(video.Message), 100);
+                        description = GetDescription(video.Message);
                     }
 
 
-                    var result = await _uploader.UploadAsync(title, message?.Content, video.LocalPath, stoppingToken);
+                    var result = await _uploader.UploadAsync(title, description, video.LocalPath, stoppingToken);
                     if (result.Success)
                     {
                         _logger.LogInformation($"video sent to hosting: {video.Id}, url: {result.Url}");
@@ -72,6 +75,59 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 
                 _logger.LogInformation($"videos sent to hosting: {count}");
             }
+        }
+
+        /// <summary>
+        /// Get full description for video on all languages
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private string GetDescription(Message message)
+        {
+            var description = new StringBuilder(512);
+
+            var defaultContent = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
+            if (defaultContent != null)
+            {
+                description.Append(defaultContent.Message);
+            }
+
+            if (description.Length > 0) description.Append("\r\n\r\n");
+            description.Append(message.Content);
+
+            if (message.Translates == null)
+            {
+                return description.ToString();
+            }
+
+            foreach (var translate in message.Translates.Where(x => x.Language != DefaultLanguage))
+            {
+                if (description.Length > 0)
+                {
+                    description.Append("\r\n\r\n");
+                }
+
+                description.Append(translate.Content);
+            }
+
+
+            return description.ToString();
+        }
+
+        private string GetTitle(Message message)
+        {
+            if (message == null)
+            {
+                return DefaultTitle;
+            }
+
+            var translate = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
+            if (translate != null)
+            {
+                return translate.Content;
+            }
+
+            return message.Content;
         }
     }
 }

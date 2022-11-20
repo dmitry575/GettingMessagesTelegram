@@ -69,6 +69,9 @@ public class Export : IExport
                 }
 
                 await ProcessFileTranslate(language, file, messageId, commentsCount, page, cancellation);
+                File.Delete(file);
+                _logger.LogInformation($"Export: filename deleted: {file}");
+
             }
         }
     }
@@ -91,11 +94,11 @@ public class Export : IExport
 
         var count = page == 0 ? (collections.Count - 2) / 2 : collections.Count / 2;
 
-        if (count != commentsCount)
-        {
-            _logger.LogInformation($"Export: {filename} has invalid count of comments need {commentsCount}, but exists: {count}. Check cleaning after translating");
-            return;
-        }
+        //if (count != commentsCount)
+        //{
+        //    _logger.LogInformation($"Export: {filename} has invalid count of comments need {commentsCount}, but exists: {count}. Check cleaning after translating");
+        //    return;
+        //}
 
         await ProcessSaveTranslate(language, messageId, page, collections, cancellation);
     }
@@ -109,10 +112,10 @@ public class Export : IExport
         if (page == 0)
         {
             await _messageTranslateService.ReplaceTranslateAsync(messageId, collections[0].Trim(), language, cancellation);
-            i = 1;
+            i = 2;
         }
 
-        for (; i < collections.Count; i++)
+        for (; i < collections.Count; i+=2)
         {
             var translatedContent = collections[i].Trim();
             var s = collections[i + 1];

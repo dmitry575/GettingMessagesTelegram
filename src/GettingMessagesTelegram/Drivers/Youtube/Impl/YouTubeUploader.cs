@@ -112,7 +112,6 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                         break;
                 }
             }
-
         }
     }
 }
