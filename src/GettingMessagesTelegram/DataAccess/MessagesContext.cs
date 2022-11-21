@@ -25,7 +25,7 @@ public class MessagesContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .EnableSensitiveDataLogging()
+            //.EnableSensitiveDataLogging()
             .EnableDetailedErrors();
 
         optionsBuilder.LogTo(log => Console.WriteLine(log));

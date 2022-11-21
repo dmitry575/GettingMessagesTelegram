@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using GettingMessagesTelegram.Drivers.Translates;
 using GettingMessagesTelegram.Drivers.Translates.Imp;
 using GettingMessagesTelegram.Drivers.Translates.Config;
+using Microsoft.Extensions.Logging;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -32,12 +33,20 @@ using IHost host = Host.CreateDefaultBuilder(args)
         string connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
         services.Configure<TranslatesConfig>(configuration.GetSection("Translates"));
-
+        services.AddLogging(configure =>
+        {
+            configure.SetMinimumLevel(LogLevel.Information);
+            configure.AddLog4Net();
+            configure.AddConsole();
+        });
         services.AddSingleton(configuration);
 
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMessageService, MessageService>();
+        services.AddSingleton<ICommentsService, CommentsService>();
+        services.AddSingleton<IMessageTranslateService, MessageTranslateService>();
+        
         services.AddSingleton<IImport, Import>();
         services.AddHostedService<ImportService>();
     })

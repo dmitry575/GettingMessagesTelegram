@@ -12,7 +12,7 @@ namespace GettingMessagesTelegram.Data
         public long Id { get; set; }
 
         /// <summary>
-        /// Id message
+        /// Id comment
         /// </summary>
         public long CommentId { get; set; }
 

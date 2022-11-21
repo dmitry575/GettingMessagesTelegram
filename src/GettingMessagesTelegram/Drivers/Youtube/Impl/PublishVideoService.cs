@@ -12,7 +12,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         /// <summary>
         /// Default title of videos
         /// </summary>
-        private const string DefaultTitle = "War in Ukrain 2022";
+        private const string DefaultTitle = "War in Ukrain 2022, somewhere in Ukraine";
 
         /// <summary>
         /// Default language fro title of video
@@ -92,7 +92,10 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 description.Append(defaultContent.Message.Content);
             }
 
-            if (description.Length > 0) description.Append("\r\n\r\n");
+            if (description.Length > 0)
+            {
+                description.Append("\r\n\r\n");
+            }
             description.Append(message.Content);
 
             if (message.Translates == null)
@@ -124,10 +127,10 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
             var translate = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
             if (translate != null)
             {
-                return translate.Content;
+                return string.IsNullOrEmpty(translate.Content) ? DefaultTitle : translate.Content;
             }
 
-            return message.Content;
+            return string.IsNullOrEmpty(message.Content) ? DefaultTitle : message.Content;
         }
     }
 }

@@ -91,6 +91,7 @@ public class MessageService : IMessageService
     {
         var query = _messagesContext
             .Messages
+            .AsNoTracking()
             .AsQueryable();
         if (withTranslates)
         {
@@ -105,9 +106,26 @@ public class MessageService : IMessageService
         return await _messagesContext
             .Messages
             .AsQueryable()
+            .AsNoTracking()
             .Include(x => x.Translates)
-            .Where(x => x.Translates == null || x.Translates.All(t => t.Language != language))
+            .Where(x => !x.Translates.Any() || x.Translates.All(t => t.Language != language))
+            .OrderBy(x => x.Id)
             .Skip(page * countRows)
+            .Take(countRows)
+            .ToListAsync();
+    }
+
+    public async Task<List<Message>> GetNotTranslateEmptyContent(string language, long lastId, int countRows)
+    {
+        return await _messagesContext
+            .Messages
+            .AsQueryable()
+            .AsNoTracking()
+            .Include(x => x.Translates)
+            .Where(x => x.Id > lastId)
+            .Where(x => x.Content == "" || x.Content == null)
+            .Where(x => !x.Translates.Any() || x.Translates.All(t => t.Language != language))
+            .OrderBy(x => x.Id)
             .Take(countRows)
             .ToListAsync();
     }

@@ -48,4 +48,12 @@ public interface IMessageService
     /// <param name="page">Current page</param>
     /// <param name="countRows">Count of row on witch page</param>
     Task<List<Message>> GetNotTranslate(string language, int page, int countRows);
+
+    /// <summary>
+    /// Get not translate message with empty content
+    /// </summary>
+    /// <param name="language">Language for searching not translating messages</param>
+    /// <param name="lastId">Id message from get rows</param>
+    /// <param name="countRows">Count of row on witch page</param>
+    Task<List<Message>> GetNotTranslateEmptyContent(string language, long lastId, int countRows);
 }

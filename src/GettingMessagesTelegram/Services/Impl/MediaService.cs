@@ -38,7 +38,7 @@ public class MediaService : IMediaService
     {
         return await _messagesContext
             .Medias
-            .AsQueryable()
+            .AsNoTracking()
             .Include(x => x.Message)
             .Where(x => x.Id > id)
             .Where(x => x.Type == MediaType.Photo)
@@ -56,7 +56,7 @@ public class MediaService : IMediaService
     {
         return await _messagesContext
             .Medias
-            .AsQueryable()
+            .AsNoTracking()
             .Include(x => x.Message)
             .Include(x => x.Message.Translates)
             .Where(x => x.Id > id)

@@ -37,7 +37,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddLogging(configure =>
         {
-            configure.SetMinimumLevel(LogLevel.Trace);
+            configure.SetMinimumLevel(LogLevel.Information);
             configure.AddLog4Net();
             configure.AddConsole();
         });

@@ -9,6 +9,7 @@ using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Drivers.PostImage;
 using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -30,7 +31,12 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // get connection string to database
         string connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
-
+        services.AddLogging(configure =>
+        {
+            configure.SetMinimumLevel(LogLevel.Information);
+            configure.AddLog4Net();
+            configure.AddConsole();
+        });
         services.AddSingleton(configuration);
 
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
