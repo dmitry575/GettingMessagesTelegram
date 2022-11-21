@@ -205,7 +205,8 @@ public class ReceiveService : IReceiveService
             {
                 case UpdateNewMessage unm: await ProcessEventMessage(unm.message); break;
                 case UpdateEditMessage uem: await ProcessEventMessage(uem.message); break;
-                default: _logger.LogInformation($"handle a type message type: {update.GetType().Name}"); break; 
+                case UpdateUserStatus: break;
+                default: _logger.LogInformation($"handle a unknown type message type: {update.GetType().Name}"); break; 
             }
     }
 
