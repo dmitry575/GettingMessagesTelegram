@@ -32,6 +32,8 @@ public class Import : IImport
 
     public async Task ImportAsync(CancellationToken cancellation = default)
     {
+        var messageIds = new HashSet<long>();
+
         foreach (var language in _config.DestLanguages)
         {
             var page = 0;
@@ -46,6 +48,8 @@ public class Import : IImport
                 }
                 foreach (var message in messages)
                 {
+                    messageIds.Add(message.Id);
+
                     var text = new StringBuilder(1024);
 
                     text.Append(message.Content);
@@ -55,6 +59,9 @@ public class Import : IImport
 
                     var commentPage = 0;
                     var commentsCount = 0;
+
+                    
+
                     foreach (var messageComment in message.Comments)
                     {
                         text.Append(messageComment.Content);

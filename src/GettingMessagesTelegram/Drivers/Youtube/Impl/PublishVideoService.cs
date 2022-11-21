@@ -89,7 +89,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
             var defaultContent = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
             if (defaultContent != null)
             {
-                description.Append(defaultContent.Message);
+                description.Append(defaultContent.Message.Content);
             }
 
             if (description.Length > 0) description.Append("\r\n\r\n");

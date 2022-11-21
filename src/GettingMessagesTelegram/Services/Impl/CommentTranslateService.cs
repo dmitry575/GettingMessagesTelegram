@@ -24,11 +24,11 @@ public class CommentTranslateService : ICommentTranslateService
 
     public async Task ReplaceTranslateAsync(long commentId, string content, string language, CancellationToken cancellationToken)
     {
-        var message = await _messagesContext.CommentsTranslates
+        var commentTranslate = await _messagesContext.CommentsTranslates
             .AsQueryable()
             .FirstOrDefaultAsync(x => x.CommentId == commentId && x.Language == language, cancellationToken: cancellationToken);
 
-        if (message == null)
+        if (commentTranslate == null)
         {
             await _messagesContext.CommentsTranslates.AddAsync(new CommentTranslate
             {
@@ -40,7 +40,7 @@ public class CommentTranslateService : ICommentTranslateService
         }
         else
         {
-            message.Content = content;
+            commentTranslate.Content = content;
         }
 
         await _messagesContext.SaveChangesAsync(cancellationToken);

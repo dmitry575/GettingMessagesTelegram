@@ -117,6 +117,7 @@ public class Export : IExport
         if (page == 0)
         {
             await _messageTranslateService.ReplaceTranslateAsync(messageId, collections[0].Trim(), language, cancellation);
+            _logger.LogInformation($"translated message: {messageId}, lang: {language}");
             i = 2;
         }
 
@@ -130,6 +131,7 @@ public class Export : IExport
             }
 
             await _commentTranslateService.ReplaceTranslateAsync(id, translatedContent, language, cancellation);
+            _logger.LogInformation($"translated comment: {id}, lang: {language} for message {messageId}");
         }
     }
 

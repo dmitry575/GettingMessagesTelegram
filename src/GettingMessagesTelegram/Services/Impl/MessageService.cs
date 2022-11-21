@@ -105,7 +105,6 @@ public class MessageService : IMessageService
         return await _messagesContext
             .Messages
             .AsQueryable()
-            .Include(x => x.Comments)
             .Include(x => x.Translates)
             .Where(x => x.Translates == null || x.Translates.All(t => t.Language != language))
             .Skip(page * countRows)
