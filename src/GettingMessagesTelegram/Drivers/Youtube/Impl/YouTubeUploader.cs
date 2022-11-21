@@ -84,6 +84,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 {
                     _logger.LogError($"upload video failed, {fileName}, {title}, byte sent: {result.BytesSent}, {result.Exception}");
                     // if sending with error throw exception
+
                     throw result.Exception;
                 }
 
@@ -96,6 +97,11 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
             catch (Exception e)
             {
                 _logger.LogError($"upload video failed, {fileName}, {title}, {e}");
+                if (e.Message.Contains("HttpStatusCode is Forbidden"))
+                {
+                    throw;
+                }
+
                 return new UploadResult { Success = false };
             }
 
