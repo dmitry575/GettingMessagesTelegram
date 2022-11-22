@@ -17,11 +17,6 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
     /// </summary>
     public class YouTubeUploader : IYouTubeUploader
     {
-        /// <summary>
-        /// Url to youtube
-        /// </summary>
-        private const string YoutubeUrl = "https://youtu.be/";
-
         private readonly ILogger<YouTubeUploader> _logger;
         private readonly YoutubeConfig _config;
         private string _videoId = string.Empty;
@@ -33,7 +28,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         public async Task<UploadResult> UploadAsync(string title, string description, string fileName, CancellationToken cancellation = default)
         {
             _videoId = string.Empty;
-
+            
             try
             {
                 var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -91,7 +86,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 return new UploadResult
                 {
                     Success = result.Status == UploadStatus.Completed,
-                    Url = YoutubeUrl + _videoId
+                    Url = _config.YoutubeUrl + _videoId
                 };
             }
             catch (Exception e)

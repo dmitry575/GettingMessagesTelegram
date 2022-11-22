@@ -7,9 +7,15 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Config
     /// </summary>
     public class YoutubeConfig
     {
+        /// <summary>
+        /// Client id for outh2 authorize
+        /// </summary>
         [ConfigurationKeyName("client_id")]
         public string ClientId { get; set; }
 
+        /// <summary>
+        /// Secret string for outh2 authorize
+        /// </summary>
         [ConfigurationKeyName("client_secret")]
         public string ClientSecret { get; set; }
 
@@ -21,5 +27,18 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Config
 
         [ConfigurationKeyName("token_uri")]
         public string TokenUri { get; set; }
+
+        /// <summary>
+        /// Default title for videos
+        /// </summary>
+        [ConfigurationKeyName("default_title")]
+        public string DefaultTitle { get; set; }
+
+        /// <summary>
+        /// Url for links display youtube videos
+        /// </summary>
+        [ConfigurationKeyName("youtube_url")]
+        public string YoutubeUrl { get; set; }
+        
     }
 }

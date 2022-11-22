@@ -1,18 +1,16 @@
 ﻿using System.Text;
 using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Drivers.PostImage.Impl;
+using GettingMessagesTelegram.Drivers.Youtube.Config;
 using GettingMessagesTelegram.Helpers;
 using GettingMessagesTelegram.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GettingMessagesTelegram.Drivers.Youtube.Impl
 {
     public class PublishVideoService : IPublishVideoService
     {
-        /// <summary>
-        /// Default title of videos
-        /// </summary>
-        private const string DefaultTitle = "War in Ukrain 2022, somewhere in Ukraine";
 
         /// <summary>
         /// Default language fro title of video
@@ -23,13 +21,16 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         private readonly IMediaService _mediaService;
         private readonly IYouTubeUploader _uploader;
         private readonly ILogger<PublishMediaService> _logger;
-
-        public PublishVideoService(IMediaService mediaService, IYouTubeUploader uploader,
+        private readonly YoutubeConfig _config;
+        public PublishVideoService(IMediaService mediaService, 
+            IYouTubeUploader uploader,
+            IOptions<YoutubeConfig> config,
             ILogger<PublishMediaService> logger)
         {
             _mediaService = mediaService;
             _uploader = uploader;
             _logger = logger;
+            _config = config.Value;
         }
 
         public async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -53,7 +54,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                         continue;
                     }
 
-                    var title = DefaultTitle;
+                    var title = _config.DefaultTitle;
                     var description = string.Empty;
                     if (video.Message != null)
                     {
@@ -89,7 +90,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
             var defaultContent = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
             if (defaultContent != null)
             {
-                description.Append(defaultContent.Message.Content);
+                description.Append(defaultContent.Content);
             }
 
             if (description.Length > 0)
@@ -121,16 +122,16 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         {
             if (message == null)
             {
-                return DefaultTitle;
+                return _config.DefaultTitle;
             }
 
             var translate = message.Translates?.FirstOrDefault(x => x.Language == DefaultLanguage);
             if (translate != null)
             {
-                return string.IsNullOrEmpty(translate.Content) ? DefaultTitle : translate.Content;
+                return string.IsNullOrEmpty(translate.Content) ? _config.DefaultTitle : translate.Content;
             }
 
-            return string.IsNullOrEmpty(message.Content) ? DefaultTitle : message.Content;
+            return string.IsNullOrEmpty(message.Content) ? _config.DefaultTitle : message.Content;
         }
     }
 }
