@@ -47,7 +47,7 @@ namespace GettingMessagesTelegram.Media.Impl
                 BaseId = photo.ID,
                 HashAccess = photo.access_hash,
                 Type = MediaType.Photo,
-                MimeType = photo.LargestPhotoSize.Type,
+                MimeType = photo.LargestPhotoSize.Type?.Length > 55 ? photo.LargestPhotoSize.Type.Substring(0, 55) : photo.LargestPhotoSize.Type,
                 MessageId = messageId,
                 FileSize = photo.LargestPhotoSize.FileSize,
                 FileName = photo.dc_id.ToString()
@@ -64,7 +64,7 @@ namespace GettingMessagesTelegram.Media.Impl
                 BaseId = document.ID,
                 HashAccess = document.access_hash,
                 Type = GetMediaType(document.mime_type),
-                MimeType = document.mime_type,
+                MimeType = document.mime_type?.Length > 55 ? document.mime_type.Substring(0, 55) : document.mime_type,
                 MessageId = messageId,
                 FileSize = document.size,
                 FileName = document.Filename

@@ -25,7 +25,7 @@ public class WordHelper
         }
 
         // send end of text
-        int end = maxLength;
+        int end = maxLength - 1;
         for (; end > 0; end--)
         {
             if (Delimitary.IndexOf(content[end]) > -1)
