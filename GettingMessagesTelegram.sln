@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishImage.Tests", "tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishVideo", "src\PublishVideo\PublishVideo.csproj", "{503D7CB3-B8E1-48B3-854D-C19A4BACD9EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportTranslate", "src\ImportTranslate\ImportTranslate.csproj", "{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportTranslate", "src\ImportTranslate\ImportTranslate.csproj", "{7F14BD1F-3513-4E53-9EF5-CE92D23B1FA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExportTranslate", "src\ExportTranslate\ExportTranslate.csproj", "{0C924658-4522-494B-8CEC-79257AF6F3CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExportTranslate", "src\ExportTranslate\ExportTranslate.csproj", "{0C924658-4522-494B-8CEC-79257AF6F3CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslateService", "TranslateService\TranslateService.csproj", "{6D54E985-B9B6-4B1A-AD7B-017A100D3629}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{0C924658-4522-494B-8CEC-79257AF6F3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C924658-4522-494B-8CEC-79257AF6F3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C924658-4522-494B-8CEC-79257AF6F3CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D54E985-B9B6-4B1A-AD7B-017A100D3629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D54E985-B9B6-4B1A-AD7B-017A100D3629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D54E985-B9B6-4B1A-AD7B-017A100D3629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D54E985-B9B6-4B1A-AD7B-017A100D3629}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

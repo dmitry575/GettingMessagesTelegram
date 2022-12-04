@@ -1,16 +1,12 @@
 ﻿using GettingMessagesTelegram.Config;
-using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Enums;
 using GettingMessagesTelegram.Process;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Threading;
-using System.Threading.Channels;
 using TL;
 using WTelegram;
 using Channel = TL.Channel;
-using Message = TL.Message;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -47,6 +43,9 @@ public class ReceiveService : IReceiveService
     /// </summary>
     private const int MaxError = 5;
 
+    static readonly Dictionary<long, User> Users = new();
+    static readonly Dictionary<long, ChatBase> Chats = new();
+
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
         IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageProcess messageProcess)
     {
@@ -62,6 +61,7 @@ public class ReceiveService : IReceiveService
     {
         var me = await _clientTelegram.LoginUserIfNeeded();
         _logger.LogInformation($"Loggin by: {me.first_name}");
+        
         var page = 0;
         var pageError = 0;
         var countError = 0;
