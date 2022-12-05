@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TranslateService.Config;
 using GettingMessagesTelegram.Drivers.Translates.Config;
+using TranslateService.Services;
+using TranslateService.Services.Impl;
 
 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -39,12 +41,13 @@ using IHost host = Host.CreateDefaultBuilder(args)
             configure.AddConsole();
         });
         services.AddSingleton(configuration);
+        services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.Configure<TranslatesConfig>(configuration.GetSection("TranslatesConfig"));
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IPublishMediaService, PublishMediaService>();
-        services.AddSingleton<IPostImages, PostImages>();
+        services.AddSingleton<ITranslateMessages, TranslateMessages>();
 
         services.AddHostedService<TranslateService.Services.TranslateService>();
     })

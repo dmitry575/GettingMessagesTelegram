@@ -1,5 +1,5 @@
 ﻿
-namespace TranslateService.Models
+namespace TranslateService.Responses
 {
     /// <summary>
     /// Result of request

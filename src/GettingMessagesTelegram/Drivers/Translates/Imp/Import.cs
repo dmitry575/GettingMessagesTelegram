@@ -16,7 +16,7 @@ public class Import : IImport
     /// <summary>
     /// Max file size for translating
     /// </summary>
-    private const int MaxFilesize = 3000;
+    private const int MaxFilesize = 1000;
 
     private readonly IMessageService _messageService;
     private readonly ICommentsService _commentsService;

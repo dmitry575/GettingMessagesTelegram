@@ -4,14 +4,15 @@ namespace TranslateService.Services
 {
     public class TranslateService : BackgroundService
     {
-        public TranslateService()
-        {
-            
+        private readonly ITranslateMessages _translateMessages;
 
-        }
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        public TranslateService(ITranslateMessages translateMessages)
         {
-            throw new NotImplementedException();
+            _translateMessages = translateMessages;
+        }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            await _translateMessages.Translate(stoppingToken);
         }
     }
 }
