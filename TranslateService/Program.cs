@@ -42,11 +42,14 @@ using IHost host = Host.CreateDefaultBuilder(args)
         });
         services.AddSingleton(configuration);
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
-        services.Configure<TranslatesConfig>(configuration.GetSection("TranslatesConfig"));
+        services.Configure<TranslateConfig>(configuration.GetSection("TranslateConfig"));
+        
         services.AddScoped(c => new HttpClient(new HttpClientHandler()));
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IMediaService, MediaService>();
-        services.AddSingleton<IPublishMediaService, PublishMediaService>();
+        services.AddSingleton<IMessageTranslateService, MessageTranslateService>();
+        services.AddSingleton<ICommentTranslateService, CommentTranslateService>();
+        services.AddSingleton<ICommentsService, CommentsService>();
         services.AddSingleton<ITranslateMessages, TranslateMessages>();
 
         services.AddHostedService<TranslateService.Services.TranslateService>();

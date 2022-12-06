@@ -1,16 +1,13 @@
 ﻿using GettingMessagesTelegram.Data;
-using GettingMessagesTelegram.Drivers.PostImage.Models;
-using GettingMessagesTelegram.Drivers.Translates.Config;
 using GettingMessagesTelegram.Services;
-using Google.Apis.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Globalization;
+using Newtonsoft.Json.Linq;
+using System.Text;
 using TL;
 using TranslateService.Config;
 using TranslateService.Responses;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TranslateService.Services.Impl
 {
@@ -25,15 +22,24 @@ namespace TranslateService.Services.Impl
         private readonly TranslateConfig _translateConfig;
         private readonly IMessageService _messageService;
         private readonly ICommentsService _commentsService;
+        private readonly IMessageTranslateService _messageTranslateService;
+        private readonly ICommentTranslateService _commentTranslateService;
         private readonly ILogger<TranslateMessages> _logger;
 
-        public TranslateMessages(HttpClient httpClient, IOptions<TranslateConfig> translateConfig, IMessageService messageService, ICommentsService commentsService,
+        public TranslateMessages(HttpClient httpClient,
+            IOptions<TranslateConfig> translateConfig,
+            IMessageService messageService,
+            ICommentsService commentsService,
+            IMessageTranslateService messageTranslateService,
+            ICommentTranslateService commentTranslateService,
             ILogger<TranslateMessages> logger)
         {
             _httpClient = httpClient;
             _translateConfig = translateConfig.Value;
             _messageService = messageService;
             _commentsService = commentsService;
+            _messageTranslateService = messageTranslateService;
+            _commentTranslateService = commentTranslateService;
             _logger = logger;
         }
 
@@ -58,35 +64,92 @@ namespace TranslateService.Services.Impl
                 }
                 foreach (var message in messages)
                 {
-                    var content = new FormUrlEncodedContent(new[]
-                        {
-                             new KeyValuePair<string, string>("text", message.Content),
-                             new KeyValuePair<string, string>("fromLang", _translateConfig.SourceLanguage),
-                             new KeyValuePair<string, string>("toLang", lang),
-                             new KeyValuePair<string, string>("isHtml", "false"),
-                             new KeyValuePair<string, string>("convert", "false")
-                        });
-
-                    using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content);
-                    _logger.LogInformation($"response send translate to _translateConfig.Url, message: {message.Id}");
-
-                    var json = await postMessage.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"response send translate: {json}");
-
-                    var response = JsonConvert.DeserializeObject<TranslateResponse>(json);
+                    await TranslateMessage(message, lang, token);
 
 
-                    var comments = await _commentsService.GetNotTranslate(language, message.Id);
+                    var comments = await _commentsService.GetNotTranslate(lang, message.Id);
 
                     foreach (var messageComment in comments)
                     {
-
+                        await TranslateComment(messageComment, lang, token);
                     }
-
 
                 }
 
                 page++;
+            }
+        }
+
+        private async Task TranslateComment(Comment comment, string lang, CancellationToken token)
+        {
+            try
+            {
+                //var content = new FormUrlEncodedContent(new[]
+                //{
+                //             new KeyValuePair<string, string>("text", comment.Content),
+                //             new KeyValuePair<string, string>("fromLang", _translateConfig.SourceLanguage),
+                //             new KeyValuePair<string, string>("toLang", lang),
+                //             new KeyValuePair<string, string>("isHtml", "false"),
+                //             new KeyValuePair<string, string>("convert", "false")
+                //        });
+
+                var variables = new Dictionary<string, string>() {
+    { "text", comment.Content },
+    { "fromLang", _translateConfig.SourceLanguage }
+};
+                var content = new StringContent("text=test&fromLang=en&toLang=ru&isHtml=false&convert=false", Encoding.UTF8);
+                
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
+                _logger.LogInformation($"response send translate to {_translateConfig.Url}, comment: {comment.Id}");
+
+                var json = await postMessage.Content.ReadAsStringAsync(token);
+                _logger.LogInformation($"response send translate commnet: {json}");
+
+                var response = JsonConvert.DeserializeObject<TranslateResponse>(json);
+
+                if (response?.TextTranslated != null && !string.IsNullOrEmpty(response.TextTranslated))
+                {
+                    await _commentTranslateService.ReplaceTranslateAsync(comment.Id, response.TextTranslated, lang, token);
+                    _logger.LogInformation($"comment tanslated: {comment.Id}");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"translate message failed: {e}");
+            }
+        }
+
+        private async Task TranslateMessage(GettingMessagesTelegram.Data.Message message, string lang, CancellationToken token)
+        {
+            try
+            {
+                //var content = new FormUrlEncodedContent(new[]
+                //            {
+                //             new KeyValuePair<string, string>("text", message.Content),
+                //             new KeyValuePair<string, string>("fromLang", _translateConfig.SourceLanguage),
+                //             new KeyValuePair<string, string>("toLang", lang),
+                //             new KeyValuePair<string, string>("isHtml", "false"),
+                //             new KeyValuePair<string, string>("convert", "false")
+                //        });
+                var content = new StringContent("text=test&fromLang=en&toLang=ru&isHtml=false&convert=false", Encoding.UTF8);
+
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
+                _logger.LogInformation($"response send translate to _translateConfig.Url, message: {message.Id}");
+
+                var json = await postMessage.Content.ReadAsStringAsync(token);
+                _logger.LogInformation($"response send translate: {json}");
+
+                var response = JsonConvert.DeserializeObject<TranslateResponse>(json);
+
+                if (response?.TextTranslated != null && !string.IsNullOrEmpty(response.TextTranslated))
+                {
+                    await _messageTranslateService.ReplaceTranslateAsync(message.Id, response.TextTranslated, lang, token);
+                    _logger.LogInformation($"message tanslated: {message.Id}");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"translate message failed: {e}");
             }
         }
     }
