@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Web;
 using TL;
 using TranslateService.Config;
 using TranslateService.Responses;
@@ -97,9 +98,20 @@ namespace TranslateService.Services.Impl
     { "text", comment.Content },
     { "fromLang", _translateConfig.SourceLanguage }
 };
-                var content = new StringContent("text=test&fromLang=en&toLang=ru&isHtml=false&convert=false", Encoding.UTF8);
-                
-                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
+                var content = $"text={HttpUtility.UrlEncode(comment.Content)}" +
+                   $"&fromLang={HttpUtility.UrlEncode(_translateConfig.SourceLanguage)}" +
+                   $"&toLang={HttpUtility.UrlEncode(lang)}" +
+                   $"&isHtml={HttpUtility.UrlEncode(false.ToString())}" +
+                   $"&convert={HttpUtility.UrlEncode(false.ToString())}";
+                _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url + "?" + content, null, token);
+
+                if (postMessage.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    _logger.LogError($"translate message failed: status code: {postMessage.StatusCode}");
+                    return;
+                }
+
                 _logger.LogInformation($"response send translate to {_translateConfig.Url}, comment: {comment.Id}");
 
                 var json = await postMessage.Content.ReadAsStringAsync(token);
@@ -131,10 +143,20 @@ namespace TranslateService.Services.Impl
                 //             new KeyValuePair<string, string>("isHtml", "false"),
                 //             new KeyValuePair<string, string>("convert", "false")
                 //        });
-                var content = new StringContent("text=test&fromLang=en&toLang=ru&isHtml=false&convert=false", Encoding.UTF8);
+                var content = $"text={HttpUtility.UrlEncode(message.Content)}" +
+                    $"&fromLang={HttpUtility.UrlEncode(_translateConfig.SourceLanguage)}" +
+                    $"&toLang={HttpUtility.UrlEncode(lang)}" +
+                    $"&isHtml={HttpUtility.UrlEncode(false.ToString())}" +
+                    $"&convert={HttpUtility.UrlEncode(false.ToString())}";
+                _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url+"?"+content, null, token);
 
-                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
-                _logger.LogInformation($"response send translate to _translateConfig.Url, message: {message.Id}");
+                if (postMessage.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    _logger.LogError($"translate message failed: status code: {postMessage.StatusCode}");
+                    return;
+                }
+                _logger.LogInformation($"response send translate to {_translateConfig.Url}, message: {message.Id}");
 
                 var json = await postMessage.Content.ReadAsStringAsync(token);
                 _logger.LogInformation($"response send translate: {json}");
