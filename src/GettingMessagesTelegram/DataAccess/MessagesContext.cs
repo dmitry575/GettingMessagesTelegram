@@ -8,9 +8,9 @@ public class MessagesContext : DbContext
     public DbSet<Channel> Channels { get; set; }
 
     public DbSet<Message> Messages { get; set; }
-    
+
     public DbSet<Comment> Comments { get; set; }
-    
+
     public DbSet<Data.Media> Medias { get; set; }
 
     public DbSet<MessageTranslate> MessagesTranslates { get; set; }
@@ -20,13 +20,13 @@ public class MessagesContext : DbContext
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)
     {
-         
+
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            //.EnableSensitiveDataLogging()
-            .EnableDetailedErrors();
+        //.EnableSensitiveDataLogging()
+          .EnableDetailedErrors()          ;
 
         //optionsBuilder.LogTo(log => Console.WriteLine(log));
     }

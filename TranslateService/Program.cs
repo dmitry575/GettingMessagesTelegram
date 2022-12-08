@@ -36,7 +36,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddDbContext<MessagesContext>(options => options.UseNpgsql(connectionString));
         services.AddLogging(configure =>
         {
-            configure.SetMinimumLevel(LogLevel.Information);
+            configure.AddFilter("Microsoft", LogLevel.Warning);
             configure.AddLog4Net();
             configure.AddConsole();
         });

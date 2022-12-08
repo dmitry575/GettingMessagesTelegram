@@ -40,7 +40,6 @@ public static class ConfigureServices
 
         services.AddLogging(configure =>
         {
-            configure.SetMinimumLevel(LogLevel.Debug);
             configure.AddLog4Net();
             configure.AddConsole();
         });

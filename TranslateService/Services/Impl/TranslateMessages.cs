@@ -1,13 +1,16 @@
 ﻿using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.Services;
+using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using TL;
 using TranslateService.Config;
+using TranslateService.Requests;
 using TranslateService.Responses;
 
 namespace TranslateService.Services.Impl
@@ -42,6 +45,8 @@ namespace TranslateService.Services.Impl
             _messageTranslateService = messageTranslateService;
             _commentTranslateService = commentTranslateService;
             _logger = logger;
+            _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+
         }
 
         public async Task Translate(CancellationToken stoppingToken)
@@ -81,30 +86,25 @@ namespace TranslateService.Services.Impl
             }
         }
 
-        private async Task TranslateComment(Comment comment, string lang, CancellationToken token)
+        private async Task TranslateComment(GettingMessagesTelegram.Data.Comment comment, string lang, CancellationToken token)
         {
             try
             {
-                //var content = new FormUrlEncodedContent(new[]
-                //{
-                //             new KeyValuePair<string, string>("text", comment.Content),
-                //             new KeyValuePair<string, string>("fromLang", _translateConfig.SourceLanguage),
-                //             new KeyValuePair<string, string>("toLang", lang),
-                //             new KeyValuePair<string, string>("isHtml", "false"),
-                //             new KeyValuePair<string, string>("convert", "false")
-                //        });
+                var request = new TranslateRequest
+                {
+                    Text = comment.Content,
+                    FromLang = _translateConfig.SourceLanguage,
+                    ToLang = lang,
+                    IsHtml = false,
+                    Convert = false
+                };
 
-                var variables = new Dictionary<string, string>() {
-    { "text", comment.Content },
-    { "fromLang", _translateConfig.SourceLanguage }
-};
-                var content = $"text={HttpUtility.UrlEncode(comment.Content)}" +
-                   $"&fromLang={HttpUtility.UrlEncode(_translateConfig.SourceLanguage)}" +
-                   $"&toLang={HttpUtility.UrlEncode(lang)}" +
-                   $"&isHtml={HttpUtility.UrlEncode(false.ToString())}" +
-                   $"&convert={HttpUtility.UrlEncode(false.ToString())}";
-                _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url + "?" + content, null, token);
+                _logger.LogInformation($"sending translate comment {comment.Id} of message: {comment.MessageId}");
+
+                var content = new StringContent(JsonConvert.SerializeObject(request));
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
 
                 if (postMessage.StatusCode != System.Net.HttpStatusCode.OK)
                 {
@@ -135,21 +135,20 @@ namespace TranslateService.Services.Impl
         {
             try
             {
-                //var content = new FormUrlEncodedContent(new[]
-                //            {
-                //             new KeyValuePair<string, string>("text", message.Content),
-                //             new KeyValuePair<string, string>("fromLang", _translateConfig.SourceLanguage),
-                //             new KeyValuePair<string, string>("toLang", lang),
-                //             new KeyValuePair<string, string>("isHtml", "false"),
-                //             new KeyValuePair<string, string>("convert", "false")
-                //        });
-                var content = $"text={HttpUtility.UrlEncode(message.Content)}" +
-                    $"&fromLang={HttpUtility.UrlEncode(_translateConfig.SourceLanguage)}" +
-                    $"&toLang={HttpUtility.UrlEncode(lang)}" +
-                    $"&isHtml={HttpUtility.UrlEncode(false.ToString())}" +
-                    $"&convert={HttpUtility.UrlEncode(false.ToString())}";
-                _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url+"?"+content, null, token);
+                var request = new TranslateRequest
+                {
+                    Text = message.Content,
+                    FromLang = _translateConfig.SourceLanguage,
+                    ToLang = lang,
+                    IsHtml = false,
+                    Convert = true
+                };
+                _logger.LogInformation($"sending translate message {message.Id}");
+
+                var content = new StringContent(JsonConvert.SerializeObject(request));
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                using var postMessage = await _httpClient.PostAsync(_translateConfig.Url, content, token);
 
                 if (postMessage.StatusCode != System.Net.HttpStatusCode.OK)
                 {
