@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportTranslate", "src\Impo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExportTranslate", "src\ExportTranslate\ExportTranslate.csproj", "{0C924658-4522-494B-8CEC-79257AF6F3CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslateService", "TranslateService\TranslateService.csproj", "{6D54E985-B9B6-4B1A-AD7B-017A100D3629}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslateService", "src\TranslateService\TranslateService.csproj", "{6D54E985-B9B6-4B1A-AD7B-017A100D3629}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
