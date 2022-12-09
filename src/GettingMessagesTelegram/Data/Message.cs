@@ -46,6 +46,11 @@ public class Message
     /// Id of relation channel
     /// </summary>
     public long ChannelId { get; set; }
+
+    /// <summary>
+    /// Date published message
+    /// </summary>
+    public DateTime? PublishData { get; set; }
     
     public virtual Channel Channel { get; set; }
     

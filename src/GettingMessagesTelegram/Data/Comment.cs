@@ -37,6 +37,11 @@ public class Comment
     /// </summary>
     public long MessageId { get; set; }
 
+    /// <summary>
+    /// Date published comment
+    /// </summary>
+    public DateTime? PublishData { get; set; }
+
     public virtual Message Message { get; set; }
 
     public virtual ICollection<CommentTranslate> Translates { get; set; }

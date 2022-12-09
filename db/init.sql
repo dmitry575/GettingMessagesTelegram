@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS public."Messages"
 "ViewCount" int NOT NULL,
 "CommentCount" int NOT NULL,
 "ChannelId" bigint NOT NULL,
-"GroupId" bigint NOT NULL
+"GroupId" bigint NOT NULL,
+"PublishData" timestamp without time zone NULL
 );
 
 CREATE TABLE IF NOT EXISTS public."MessagesTranslates"
@@ -17,7 +18,8 @@ CREATE TABLE IF NOT EXISTS public."MessagesTranslates"
 "MessageId" bigint NOT NULL,
 "Content" text,
 "Language" varchar(5) NOT NULL,
-"DateCreated" timestamp without time zone NOT NULL
+"DateCreated" timestamp without time zone NOT NULL,
+"PublishData" timestamp without time zone NULL
 );
 
 
@@ -40,7 +42,8 @@ CREATE TABLE IF NOT EXISTS public."Comments"
 "UserId" bigint,
 "Content" text,
 "DateCreated" timestamp without time zone NOT NULL,
-"MessageId" bigint NOT NULL
+"MessageId" bigint NOT NULL,
+"PublishData" timestamp without time zone NULL
 );
 
 CREATE TABLE IF NOT EXISTS public."CommentsTranslates"
@@ -49,7 +52,8 @@ CREATE TABLE IF NOT EXISTS public."CommentsTranslates"
 "CommentId" bigint NOT NULL,
 "Language" varchar(5) NOT NULL,
 "Content" text,
-"DateCreated" timestamp without time zone NOT NULL
+"DateCreated" timestamp without time zone NOT NULL,
+"PublishData" timestamp without time zone NULL
 );
 
 CREATE TABLE IF NOT EXISTS public."Medias"
@@ -163,11 +167,19 @@ CREATE UNIQUE INDEX messages_baseid ON "Messages" USING btree ("BaseId", "Channe
 
 CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId", "MessageId");
 
+CREATE INDEX messages_publishdate ON "Messages" USING btree ("PublishDate");
+
 CREATE UNIQUE INDEX comments_baseid ON "Comments" USING btree ("BaseId", "MessageId");
+
+CREATE INDEX comments_publishdate ON "Comments" USING btree ("PublishDate");
 
 CREATE UNIQUE INDEX medias_baseid ON "Medias" USING btree ("BaseId", "MessageId");
 
 CREATE UNIQUE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","MessageId");
 
+CREATE INDEX messages_translates_publishdate ON "MessagesTranslates" USING btree ("PublishDate");
+
 CREATE UNIQUE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","CommentId");
+
+CREATE INDEX comments_translates_publishdate ON "CommentsTranslates" USING btree ("PublishDate");
 

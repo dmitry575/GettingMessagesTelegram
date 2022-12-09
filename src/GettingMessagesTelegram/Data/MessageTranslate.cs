@@ -28,6 +28,11 @@ namespace GettingMessagesTelegram.Data
         /// </summary>
         public string Language { get; set; }
 
+    /// <summary>
+    /// Date published message
+    /// </summary>
+    public DateTime? PublishData { get; set; }
+
         public virtual Message Message { get; set; }
     }
 }
