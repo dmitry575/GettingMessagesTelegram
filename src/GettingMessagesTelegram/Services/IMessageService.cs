@@ -56,4 +56,17 @@ public interface IMessageService
     /// <param name="lastId">Id message from get rows</param>
     /// <param name="countRows">Count of row on witch page</param>
     Task<List<Message>> GetNotTranslateEmptyContent(string language, long lastId, int countRows);
+
+    /// <summary>
+    /// Get not sent message
+    /// </summary>
+    /// <param name="lastId">Id message from get rows</param>
+    /// <param name="countRows">Count of row on witch page</param>
+    Task<List<Message>> GetNotSent(long lastId, int countRows, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Update field DatePublish
+    /// </summary>
+    /// <param name="id">id message</param>
+    Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken);
 }

@@ -21,5 +21,5 @@ src/ExportTranslate/bin/
 WTelegram.session
 publish/
 GettingMessagesTelegram.sln.DotSettings.user
-TranslateService/bin/
-TranslateService/obj/
+src/TranslateService/bin/
+src/TranslateService/obj/

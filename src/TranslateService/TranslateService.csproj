@@ -17,7 +17,7 @@
 
 
 	<ItemGroup>
-	  <ProjectReference Include="..\src\GettingMessagesTelegram\GettingMessagesTelegram.csproj" />
+	  <ProjectReference Include="..\GettingMessagesTelegram\GettingMessagesTelegram.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

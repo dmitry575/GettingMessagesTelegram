@@ -1,6 +1,7 @@
 ﻿using GettingMessagesTelegram.Data;
 using GettingMessagesTelegram.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -128,5 +129,33 @@ public class MessageService : IMessageService
             .OrderBy(x => x.Id)
             .Take(countRows)
             .ToListAsync();
+    }
+
+    public async Task<List<Message>> GetNotSent(long lastId, int countRows, CancellationToken cancellationToken)
+    {
+        return await _messagesContext
+            .Messages
+            .AsQueryable()
+            .Where(x => x.Id > lastId)
+            .Where(x => x.PublishData == null)
+            .OrderBy(x => x.Id)
+            .Take(countRows)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken)
+    {
+        var message = await _messagesContext
+             .Messages
+             .AsQueryable()
+             .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (message != null)
+        {
+            message.PublishData = DateTime.UtcNow;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
     }
 }
