@@ -11,7 +11,7 @@ public class MessageTranslateService : IMessageTranslateService
     {
         _messagesContext = messagesContext;
     }
-    
+
     public async Task ReplaceTranslateAsync(long messageId, string content, string language, CancellationToken cancellationToken)
     {
         var message = await _messagesContext.MessagesTranslates
@@ -34,5 +34,33 @@ public class MessageTranslateService : IMessageTranslateService
         }
 
         await _messagesContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<List<MessageTranslate>> GetNotSent(long lastId, int countRows, CancellationToken cancellationToken)
+    {
+        return await _messagesContext
+             .MessagesTranslates
+             .AsQueryable()
+             .Where(x => x.Id > lastId)
+             .Where(x => x.PublishData == null)
+             .OrderBy(x => x.Id)
+             .Take(countRows)
+             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken)
+    {
+        var message = await _messagesContext
+            .MessagesTranslates
+            .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (message != null)
+        {
+            message.PublishData = DateTime.UtcNow;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
     }
 }
