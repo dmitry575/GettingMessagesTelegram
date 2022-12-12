@@ -167,7 +167,7 @@ CREATE UNIQUE INDEX messages_baseid ON "Messages" USING btree ("BaseId", "Channe
 
 CREATE INDEX messages_groupid ON "Messages" USING btree ("GroupId", "MessageId");
 
-CREATE INDEX messages_publishdate ON "Messages" USING btree ("PublishDate");
+CREATE INDEX messages_publishdate ON "Messages" USING btree ("PublishData");
 
 CREATE UNIQUE INDEX comments_baseid ON "Comments" USING btree ("BaseId", "MessageId");
 
@@ -177,9 +177,9 @@ CREATE UNIQUE INDEX medias_baseid ON "Medias" USING btree ("BaseId", "MessageId"
 
 CREATE UNIQUE INDEX messages_translates_lang ON "MessagesTranslates" USING btree ("Language","MessageId");
 
-CREATE INDEX messages_translates_publishdate ON "MessagesTranslates" USING btree ("PublishDate");
+CREATE INDEX messages_translates_publishdate ON "MessagesTranslates" USING btree ("PublishData");
 
 CREATE UNIQUE INDEX comments_translates_lang ON "CommentsTranslates" USING btree ("Language","CommentId");
 
-CREATE INDEX comments_translates_publishdate ON "CommentsTranslates" USING btree ("PublishDate");
+CREATE INDEX comments_translates_publishdate ON "CommentsTranslates" USING btree ("PublishData");
 
