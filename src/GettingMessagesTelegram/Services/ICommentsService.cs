@@ -23,7 +23,7 @@ public interface ICommentsService
     Task<List<Comment>> GetNotTranslate(string language, long messageId);
 
     /// <summary>
-    /// Get not sent comment
+    /// Get not sent comments
     /// </summary>
     /// <param name="lastId">Id message from get rows</param>
     /// <param name="countRows">Count of row on witch page</param>
@@ -33,5 +33,5 @@ public interface ICommentsService
     /// Update field DatePublish
     /// </summary>
     /// <param name="id">id comment</param>
-    Task<int> UpdateDatePublish(long[] id, CancellationToken cancellationToken);
+    Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken);
 }

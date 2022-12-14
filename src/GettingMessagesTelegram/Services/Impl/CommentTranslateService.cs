@@ -45,4 +45,35 @@ public class CommentTranslateService : ICommentTranslateService
 
         await _messagesContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<List<CommentTranslate>> GetNotSent(long lastId, int countRows, CancellationToken cancellationToken)
+    {
+        return await _messagesContext
+             .CommentsTranslates
+             .AsQueryable()
+             .Include(x => x.Comment)
+             .Include(x => x.Comment.Message)
+             .Where(x => x.Comment.Message.PublishData != null)
+             .Where(x => x.Id > lastId)
+             .Where(x => x.PublishData == null)
+             .OrderBy(x => x.Id)
+             .Take(countRows)
+             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken)
+    {
+        var message = await _messagesContext
+            .CommentsTranslates
+            .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (message != null)
+        {
+            message.PublishData = DateTime.UtcNow;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
+    }
 }

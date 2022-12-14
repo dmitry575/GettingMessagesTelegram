@@ -31,10 +31,10 @@ namespace GettingMessagesTelegram.Data
         /// </summary>
         public string Language { get; set; }
 
-    /// <summary>
-    /// Date published comment
-    /// </summary>
-    public DateTime? PublishData { get; set; }
+        /// <summary>
+        /// Date published comment
+        /// </summary>
+        public DateTime? PublishData { get; set; }
 
         public virtual Comment Comment { get; set; }
     }

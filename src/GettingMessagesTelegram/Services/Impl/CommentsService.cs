@@ -58,6 +58,22 @@ public class CommentsService : ICommentsService
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken)
+    {
+        var comment = await _messagesContext
+            .Comments
+            .AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (comment != null)
+        {
+            comment.PublishData = DateTime.UtcNow;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
+    }
+
     public async Task<int> UpdateDatePublish(long[] id, CancellationToken cancellationToken)
     {
         var comments = await _messagesContext
