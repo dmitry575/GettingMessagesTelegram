@@ -90,6 +90,7 @@ public class MessageProcess : IMessageProcess
                     var existsMedia = messageData.Medias.FirstOrDefault(x => x.BaseId == media.BaseId);
                     if (existsMedia == null)
                     {
+                        media.DateCreated = m.Date;
                         media.LocalPath = await DownloadFile(m.media);
                         messageData.Medias.Add(media);
                     }
@@ -100,6 +101,7 @@ public class MessageProcess : IMessageProcess
                         {
                             // update local path
                             existsMedia.LocalPath = await DownloadFile(m.media);
+                            existsMedia.DateCreated = m.Date;
                         }
                     }
                 }

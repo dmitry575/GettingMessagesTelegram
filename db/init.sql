@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS public."Medias"
 "FileSize" bigint NULL,
 "FileName" varchar(255) NULL,
 "LocalPath" varchar(255) NULL,
-"UrlExternal" varchar(255) NULL
+"UrlExternal" varchar(255) NULL,
+"DateCreated" timestamp without time zone NULL
 );
 
 CREATE SEQUENCE channels_id_seq

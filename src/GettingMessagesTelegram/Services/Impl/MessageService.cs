@@ -136,6 +136,7 @@ public class MessageService : IMessageService
         return await _messagesContext
             .Messages
             .AsQueryable()
+            .Include(x=>x.Medias)
             .Where(x => x.Id > lastId)
             .Where(x => x.PublishData == null)
             .OrderBy(x => x.Id)
