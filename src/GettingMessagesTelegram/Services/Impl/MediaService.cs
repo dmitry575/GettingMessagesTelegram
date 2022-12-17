@@ -1,6 +1,7 @@
 ﻿using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -91,6 +92,20 @@ public class MediaService : IMediaService
         if (media != null)
         {
             _messagesContext.Remove(media);
+            await _messagesContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task UpdateDatePublish(long[] mediaIds, CancellationToken token = default)
+    {
+        var medias = await _messagesContext
+            .Medias
+            .Where(x => mediaIds.Contains(x.Id))
+            .ToListAsync(token);
+        
+        if (medias != null && medias.Count > 0)
+        {
+            medias.ForEach(x => x.PublishData = DateTime.UtcNow);
             await _messagesContext.SaveChangesAsync();
         }
     }

@@ -30,4 +30,11 @@ public interface IMediaService
     /// </summary>
     /// <param name="id">Media id</param>
     Task Delete(long id);
+
+    /// <summary>
+    /// Update date publish
+    /// </summary>
+    /// <param name="mediaIds"></param>
+    /// <param name="token"></param>
+    Task UpdateDatePublish(long[] mediaIds, CancellationToken token = default);
 }

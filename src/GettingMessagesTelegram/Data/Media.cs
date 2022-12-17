@@ -60,6 +60,12 @@ public class Media
     public string UrlExternal { get; set; }
 
     /// <summary>
+    /// Date published media
+    /// </summary>
+    public DateTime? PublishData { get; set; }
+
+
+    /// <summary>
     /// Local path where downloaded file
     /// </summary>
     public string LocalPath { get; set; }
