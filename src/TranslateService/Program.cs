@@ -5,12 +5,9 @@ using Microsoft.Extensions.Hosting;
 using GettingMessagesTelegram.Services;
 using GettingMessagesTelegram.Services.Impl;
 using GettingMessagesTelegram.DataAccess;
-using GettingMessagesTelegram.Drivers.PostImage;
-using GettingMessagesTelegram.Drivers.PostImage.Impl;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TranslateService.Config;
-using GettingMessagesTelegram.Drivers.Translates.Config;
 using TranslateService.Services;
 using TranslateService.Services.Impl;
 
