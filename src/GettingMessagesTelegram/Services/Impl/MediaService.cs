@@ -1,7 +1,6 @@
 ﻿using GettingMessagesTelegram.DataAccess;
 using GettingMessagesTelegram.Enums;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace GettingMessagesTelegram.Services.Impl;
 
@@ -102,11 +101,25 @@ public class MediaService : IMediaService
             .Medias
             .Where(x => mediaIds.Contains(x.Id))
             .ToListAsync(token);
-        
+
         if (medias != null && medias.Count > 0)
         {
             medias.ForEach(x => x.PublishData = DateTime.UtcNow);
             await _messagesContext.SaveChangesAsync();
         }
+    }
+
+    public async Task<List<Data.Media>> GetNotSent(long id, int rows, CancellationToken stoppingToken)
+    {
+        return await _messagesContext
+            .Medias
+            .AsNoTracking()
+            .Include(x => x.Message)
+            .Where(x => x.Id > id)
+            .Where(x => x.PublishData == null)
+            .Where(x => x.Message.PublishData != null)
+            .OrderBy(x => x.Id)
+            .Take(rows)
+            .ToListAsync(stoppingToken);
     }
 }

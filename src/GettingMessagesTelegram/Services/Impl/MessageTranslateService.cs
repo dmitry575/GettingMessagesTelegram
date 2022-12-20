@@ -41,6 +41,9 @@ public class MessageTranslateService : IMessageTranslateService
         return await _messagesContext
              .MessagesTranslates
              .AsQueryable()
+             .AsNoTracking()
+             .Include(x => x.Message)
+             .Include(x => x.Message.Medias)
              .Where(x => x.Id > lastId)
              .Where(x => x.PublishData == null)
              .OrderBy(x => x.Id)

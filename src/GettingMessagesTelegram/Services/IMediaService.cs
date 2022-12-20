@@ -37,4 +37,12 @@ public interface IMediaService
     /// <param name="mediaIds"></param>
     /// <param name="token"></param>
     Task UpdateDatePublish(long[] mediaIds, CancellationToken token = default);
+    
+    /// <summary>
+    /// Get not sending medias
+    /// </summary>
+    /// <param name="id">Last id</param>
+    /// <param name="rowsMessages">Count of rows</param>
+    /// <param name="stoppingToken"></param>
+    Task<List<Data.Media>> GetNotSent(long id, int rowsMessages, CancellationToken stoppingToken);
 }
