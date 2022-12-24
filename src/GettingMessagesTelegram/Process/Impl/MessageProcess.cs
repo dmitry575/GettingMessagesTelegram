@@ -15,13 +15,19 @@ namespace GettingMessagesTelegram.Process.Impl;
 
 public class MessageProcess : IMessageProcess
 {
-    private readonly ILogger<MessageProcess> _logger;
-    private readonly IMessageService _messageService;
-
     /// <summary>
     /// Max of rows in one requests for pagination
     /// </summary>
     private const int MaxRowsComments = 100;
+
+    /// <summary>
+    /// Max size of file 256 MB
+    /// </summary>
+    private const int MaxFileSize = 256 * 1024 * 1024;
+
+    private readonly ILogger<MessageProcess> _logger;
+    private readonly IMessageService _messageService;
+
 
     /// <summary>
     /// Client for Telegram
@@ -80,18 +86,25 @@ public class MessageProcess : IMessageProcess
         {
             if ((m.flags & TL.Message.Flags.has_media) != 0)
             {
-                _logger.LogInformation($"{m.media.GetType()}");
+                _logger.LogInformation($"before download media: {m.media.GetType()}, message: {message.ID}");
 
                 // create data from message
                 var media = _mediaCreator.Create(messageData.Id, m.media);
                 if (media != null)
                 {
+                    if (media.FileSize > MaxFileSize)
+                    {
+                        _logger.LogInformation($"media file too big for download: {media.FileSize} bytes, message: {media.MessageId}, {media.FileName}");
+                        return;
+                    }
                     messageData.Medias ??= new List<Data.Media>();
                     var existsMedia = messageData.Medias.FirstOrDefault(x => x.BaseId == media.BaseId);
                     if (existsMedia == null)
                     {
                         media.DateCreated = m.Date;
                         media.LocalPath = await DownloadFile(m.media);
+
+                        // add media to message
                         messageData.Medias.Add(media);
                     }
                     else

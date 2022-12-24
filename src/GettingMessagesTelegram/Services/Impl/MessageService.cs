@@ -57,6 +57,7 @@ public class MessageService : IMessageService
                 if (string.IsNullOrEmpty(m.Content) && !string.IsNullOrEmpty(message.Content) && message.Content.Length > 2)
                 {
                     m.Content = message.Content;
+                    await transaction.CommitAsync(cancellationToken);
                 }
                 return (m, true);
             }

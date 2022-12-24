@@ -20,6 +20,11 @@ public class Worker : BackgroundService
     {
         await _receiveService.WorkAsync(stoppingToken);
 
+        if (stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("Worker finished, stop token");
+            return;
+        }
         _receiveService.SubscribeToEvents();
 
         _logger.LogInformation("Listener of event started");

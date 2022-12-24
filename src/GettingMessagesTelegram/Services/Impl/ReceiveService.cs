@@ -46,6 +46,9 @@ public class ReceiveService : IReceiveService
     static readonly Dictionary<long, User> Users = new();
     static readonly Dictionary<long, ChatBase> Chats = new();
 
+    private readonly object _lockObject = new object();
+    private bool _inProccess = false;
+
     public ReceiveService(Client clientTelegram, ILogger<ReceiveService> logger,
         IOptions<ChannelsConfig> channelsConfig, IChannelsService channelsService, IMessageProcess messageProcess)
     {
@@ -61,7 +64,7 @@ public class ReceiveService : IReceiveService
     {
         var me = await _clientTelegram.LoginUserIfNeeded();
         _logger.LogInformation($"Loggin by: {me.first_name}");
-        
+
         var page = 0;
         var pageError = 0;
         var countError = 0;
@@ -200,18 +203,33 @@ public class ReceiveService : IReceiveService
             _logger.LogWarning($"received not UpdatesBase event: {arg.GetType()}");
             return;
         }
-        foreach (var update in updates.UpdateList)
-            switch (update)
-            {
-                case UpdateNewMessage unm: await ProcessEventMessage(unm.message); break;
-                case UpdateEditMessage uem: await ProcessEventMessage(uem.message); break;
-                case UpdateUserStatus: break;
-                default: _logger.LogInformation($"handle a unknown type message type: {update.GetType().Name}"); break; 
-            }
+
+        lock (_lockObject)
+        {
+            if (_inProccess)
+                return;
+            _inProccess = true;
+        }
+        try
+        {
+            foreach (var update in updates.UpdateList)
+                switch (update)
+                {
+                    case UpdateNewMessage unm: await ProcessEventMessage(unm.message); break;
+                    case UpdateEditMessage uem: await ProcessEventMessage(uem.message); break;
+                    case UpdateUserStatus: break;
+                    default: _logger.LogInformation($"handle a unknown type message type: {update.GetType().Name}"); break;
+                }
+        }
+        finally
+        {
+            _inProccess = false;
+        }
     }
 
     private async Task ProcessEventMessage(MessageBase message)
     {
+
         try
         {
             var channel = _channelsConfig.FirstOrDefault(x => x.Id == message.Peer.ID);
