@@ -69,4 +69,10 @@ public interface IMessageService
     /// </summary>
     /// <param name="id">id message</param>
     Task<int> UpdateDatePublish(long id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Update field DatePublish and set null
+    /// </summary>
+    /// <param name="id">id message</param>
+    Task<int> UpdateDatePublishToNull(long id, CancellationToken cancellationToken);
 }

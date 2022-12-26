@@ -160,4 +160,20 @@ public class MessageService : IMessageService
 
         return -1;
     }
+
+    public async Task<int> UpdateDatePublishToNull(long id, CancellationToken cancellationToken)
+    {
+        var message = await _messagesContext
+             .Messages
+             .AsQueryable()
+             .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (message != null)
+        {
+            message.PublishData = null;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
+    }
 }
