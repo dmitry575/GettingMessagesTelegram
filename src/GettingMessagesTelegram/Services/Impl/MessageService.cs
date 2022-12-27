@@ -8,7 +8,6 @@ namespace GettingMessagesTelegram.Services.Impl;
 public class MessageService : IMessageService
 {
     private readonly MessagesContext _messagesContext;
-
     public MessageService(MessagesContext messagesContext)
     {
         _messagesContext = messagesContext;
@@ -150,7 +149,7 @@ public class MessageService : IMessageService
         var message = await _messagesContext
              .Messages
              .AsQueryable()
-             .FirstOrDefaultAsync(x => x.Id == id);
+             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken: cancellationToken);
 
         if (message != null)
         {

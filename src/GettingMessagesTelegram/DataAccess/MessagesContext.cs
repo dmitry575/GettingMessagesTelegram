@@ -20,13 +20,13 @@ public class MessagesContext : DbContext
     public MessagesContext(DbContextOptions<MessagesContext> options)
         : base(options)
     {
-
     }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-        //.EnableSensitiveDataLogging()
-          .EnableDetailedErrors()          ;
+            //.EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
 
         //optionsBuilder.LogTo(log => Console.WriteLine(log));
     }
