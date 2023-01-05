@@ -66,4 +66,20 @@ public class MessageTranslateService : IMessageTranslateService
 
         return -1;
     }
+
+    public async Task<int> UpdateDatePublishToNull(long messageId, string lang, CancellationToken cancellationToken)
+    {
+        var message = await _messagesContext
+             .MessagesTranslates
+             .AsQueryable()
+             .FirstOrDefaultAsync(x => x.MessageId == messageId && x.Language == lang);
+
+        if (message != null)
+        {
+            message.PublishData = null;
+            return await _messagesContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return -1;
+    }
 }

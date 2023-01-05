@@ -22,6 +22,11 @@ namespace TranslateService.Services.Impl
         /// </summary>
         private const int CountRows = 100;
 
+        /// <summary>
+        /// minimal leghth of translated message
+        /// </summary>
+        private const int MinLengthMessage = 10;
+
         private readonly HttpClient _httpClient;
         private readonly TranslateConfig _translateConfig;
         private readonly IMessageService _messageService;
@@ -46,6 +51,7 @@ namespace TranslateService.Services.Impl
             _commentTranslateService = commentTranslateService;
             _logger = logger;
             _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+            _httpClient.Timeout = TimeSpan.FromSeconds(300);
 
         }
 
@@ -53,6 +59,10 @@ namespace TranslateService.Services.Impl
         {
             foreach (var language in _translateConfig.DestLanguages)
             {
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    return;
+                }
                 await TranslateLanguage(language, stoppingToken);
             }
 
@@ -61,28 +71,49 @@ namespace TranslateService.Services.Impl
         private async Task TranslateLanguage(string lang, CancellationToken token)
         {
             var page = 0;
-            while (await _messageService.GetNotTranslate(lang, page, CountRows) is { } messages)
+
+            try
             {
-                if (messages.Count <= 0)
+                while (await _messageService.GetNotTranslate(lang, page, CountRows) is { } messages)
                 {
-                    _logger.LogInformation($"not messages for language {lang}, page: {page}");
-                    break;
-                }
-                foreach (var message in messages)
-                {
-                    await TranslateMessage(message, lang, token);
-
-
-                    var comments = await _commentsService.GetNotTranslate(lang, message.Id);
-
-                    foreach (var messageComment in comments)
+                    if (token.IsCancellationRequested)
                     {
-                        await TranslateComment(messageComment, lang, token);
+                        return;
+                    }
+                    if (messages.Count <= 0)
+                    {
+                        _logger.LogInformation($"not messages for language {lang}, page: {page}");
+                        break;
+                    }
+                    foreach (var message in messages)
+                    {
+                        if (!await TranslateMessage(message, lang, token))
+                        {
+                            continue;
+                        }
+
+                        _logger.LogInformation($"get comments of messages for language {lang}, message id: {message.Id}");
+                        var comments = await _commentsService.GetNotTranslate(lang, message.Id);
+
+                        foreach (var messageComment in comments)
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            await TranslateComment(messageComment, lang, token);
+                        }
+
                     }
 
+                    page++;
                 }
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation($"translate messages failed: language: {lang}, page: {page}, {e}");
 
-                page++;
             }
         }
 
@@ -131,7 +162,7 @@ namespace TranslateService.Services.Impl
             }
         }
 
-        private async Task TranslateMessage(GettingMessagesTelegram.Data.Message message, string lang, CancellationToken token)
+        private async Task<bool> TranslateMessage(GettingMessagesTelegram.Data.Message message, string lang, CancellationToken token)
         {
             try
             {
@@ -153,7 +184,7 @@ namespace TranslateService.Services.Impl
                 if (postMessage.StatusCode != System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogError($"translate message failed: status code: {postMessage.StatusCode}");
-                    return;
+                    return false;
                 }
                 _logger.LogInformation($"response send translate to {_translateConfig.Url}, message: {message.Id}");
 
@@ -162,16 +193,24 @@ namespace TranslateService.Services.Impl
 
                 var response = JsonConvert.DeserializeObject<TranslateResponse>(json);
 
-                if (response?.TextTranslated != null && !string.IsNullOrEmpty(response.TextTranslated))
+                if (response?.TextTranslated != null && !string.IsNullOrEmpty(response.TextTranslated) && response.TextTranslated.Length > MinLengthMessage)
                 {
                     await _messageTranslateService.ReplaceTranslateAsync(message.Id, response.TextTranslated, lang, token);
                     _logger.LogInformation($"message tanslated: {message.Id}");
+                    return true;
                 }
+                else
+                {
+                    _logger.LogInformation($"message tanslated not saved: {message.Id}, is empty: {string.IsNullOrEmpty(response?.TextTranslated)}, lenght less: {response.TextTranslated.Length <= MinLengthMessage}");
+                }
+
             }
             catch (Exception e)
             {
                 _logger.LogError($"translate message failed: {e}");
+
             }
+            return false;
         }
     }
 }

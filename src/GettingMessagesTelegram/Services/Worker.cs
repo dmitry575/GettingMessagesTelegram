@@ -25,11 +25,11 @@ public class Worker : BackgroundService
             _logger.LogInformation("Worker finished, stop token");
             return;
         }
-        _receiveService.SubscribeToEvents();
+        //_receiveService.SubscribeToEvents();
 
-        _logger.LogInformation("Listener of event started");
+        //_logger.LogInformation("Listener of event started");
 
-        WaitHandle.WaitAny(new WaitHandle[] { stoppingToken.WaitHandle });
+        //WaitHandle.WaitAny(new WaitHandle[] { stoppingToken.WaitHandle });
         await _host.StopAsync(stoppingToken);
         _logger.LogInformation("Worker finished");
     }

@@ -32,7 +32,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton(configuration);
 
-        services.AddScoped(c => new HttpClient(new HttpClientHandler()));
+        services.AddScoped(c => new HttpClient(new HttpClientHandler { }));
         services.AddSingleton<IMediaService, MediaService>();
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IMessageService, MessageService>();

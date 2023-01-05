@@ -63,8 +63,13 @@ public class MessageProcess : IMessageProcess
 
         // add or update comments
         await ProcessComments(messageData, peerChanel, message.ID);
-
+        var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
+        _logger.LogInformation($"updated message comments: {channel.BaseId}, message id: {message.ID}, updates: {updates}");
+        
         await ProcessMedias(messageData, message);
+
+        updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
+        _logger.LogInformation($"updated message medias: {channel.BaseId}, message id: {message.ID}, updates: {updates}");
 
         if (string.IsNullOrEmpty(messageData.Author))
         {
@@ -72,7 +77,7 @@ public class MessageProcess : IMessageProcess
             messageData.Author = channel.Author;
         }
 
-        var updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
+        updates = await _messageService.ReplaceAsync(messageData, cancellationToken);
 
         _logger.LogInformation(
             $"updated message channel id: {channel.BaseId}, message id: {message.ID}, updated: {updates}");
