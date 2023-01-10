@@ -130,7 +130,7 @@ namespace TranslateService.Services.Impl
                     Convert = false
                 };
 
-                _logger.LogInformation($"sending translate comment {comment.Id} of message: {comment.MessageId}");
+                _logger.LogInformation($"sending translate comment {comment.Id} of message: {comment.MessageId}, language: {lang}");
 
                 var content = new StringContent(JsonConvert.SerializeObject(request));
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -143,7 +143,7 @@ namespace TranslateService.Services.Impl
                     return;
                 }
 
-                _logger.LogInformation($"response send translate to {_translateConfig.Url}, comment: {comment.Id}");
+                _logger.LogInformation($"response send translate to {_translateConfig.Url}, comment: {comment.Id}, language: {lang}");
 
                 var json = await postMessage.Content.ReadAsStringAsync(token);
                 _logger.LogInformation($"response send translate commnet: {json}");
@@ -153,7 +153,7 @@ namespace TranslateService.Services.Impl
                 if (response?.TextTranslated != null && !string.IsNullOrEmpty(response.TextTranslated))
                 {
                     await _commentTranslateService.ReplaceTranslateAsync(comment.Id, response.TextTranslated, lang, token);
-                    _logger.LogInformation($"comment tanslated: {comment.Id}");
+                    _logger.LogInformation($"comment tanslated: {comment.Id}, language: {lang}");
                 }
             }
             catch (Exception e)
@@ -174,7 +174,7 @@ namespace TranslateService.Services.Impl
                     IsHtml = false,
                     Convert = true
                 };
-                _logger.LogInformation($"sending translate message {message.Id}");
+                _logger.LogInformation($"sending translate message {message.Id}, lang: {lang}");
 
                 var content = new StringContent(JsonConvert.SerializeObject(request));
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
