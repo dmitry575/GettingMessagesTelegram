@@ -40,7 +40,6 @@ public class CommentsService : ICommentsService
             .AsNoTracking()
             .Include(x => x.Translates)
             .Where(x => x.MessageId == messageId)
-            .Where(x => !x.Translates.Any() || x.Translates.All(t => t.Language != language))
             .ToListAsync();
     }
 

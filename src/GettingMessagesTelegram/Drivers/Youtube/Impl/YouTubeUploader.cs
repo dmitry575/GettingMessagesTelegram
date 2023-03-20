@@ -77,7 +77,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 var result = await videosInsertRequest.UploadAsync(cancellation);
                 if (result.Exception != null)
                 {
-                    _logger.LogError($"upload video failed, {fileName}, {title}, byte sent: {result.BytesSent}, {result.Exception}");
+                    _logger.LogError($"upload video failed, {fileName}, {title}, {description} - byte sent: {result.BytesSent}, {result.Exception}");
                     // if sending with error throw exception
 
                     throw result.Exception;

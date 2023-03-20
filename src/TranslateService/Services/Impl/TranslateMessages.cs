@@ -51,7 +51,7 @@ namespace TranslateService.Services.Impl
             _commentTranslateService = commentTranslateService;
             _logger = logger;
             _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-            _httpClient.Timeout = TimeSpan.FromSeconds(300);
+            _httpClient.Timeout = TimeSpan.FromSeconds(600);
 
         }
 
@@ -87,9 +87,12 @@ namespace TranslateService.Services.Impl
                     }
                     foreach (var message in messages)
                     {
-                        if (!await TranslateMessage(message, lang, token))
+                        if (!await TranslateMessage(message, lang, true, token))
                         {
-                            continue;
+                            if (!await TranslateMessage(message, lang, false, token))
+                            {
+                                continue;
+                            }
                         }
 
                         _logger.LogInformation($"get comments of messages for language {lang}, message id: {message.Id}");
@@ -97,6 +100,12 @@ namespace TranslateService.Services.Impl
 
                         foreach (var messageComment in comments)
                         {
+                            if (messageComment.Translates != null && messageComment.Translates.Any(x => x.Language == lang))
+                            {
+                                _logger.LogInformation($"comment already translated to {lang}, comment: {messageComment.Id}, message id: {message.Id}");
+                                continue;
+                            }
+
                             if (token.IsCancellationRequested)
                             {
                                 return;
@@ -162,7 +171,7 @@ namespace TranslateService.Services.Impl
             }
         }
 
-        private async Task<bool> TranslateMessage(GettingMessagesTelegram.Data.Message message, string lang, CancellationToken token)
+        private async Task<bool> TranslateMessage(GettingMessagesTelegram.Data.Message message, string lang, bool isConvert, CancellationToken token)
         {
             try
             {
@@ -172,7 +181,7 @@ namespace TranslateService.Services.Impl
                     FromLang = _translateConfig.SourceLanguage,
                     ToLang = lang,
                     IsHtml = false,
-                    Convert = true
+                    Convert = isConvert
                 };
                 _logger.LogInformation($"sending translate message {message.Id}, lang: {lang}");
 

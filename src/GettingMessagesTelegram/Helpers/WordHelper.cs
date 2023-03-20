@@ -5,15 +5,18 @@ public class WordHelper
     /// <summary>
     /// Split in sentences
     /// </summary>
-    private const string Delimitary = ".!?()-:;,";
+    public const string Delimitary = ".!?()-:;,\n";
+
+    /// <summary>
+    /// Split in title
+    /// </summary>
+    public const string DelimitaryTitle = ".!?()-:;,\n ";
 
     /// <summary>
     /// Get split text
     /// </summary>
-    public static string GetSplitByWord(string content, int maxLength)
+    public static string GetSplitByWord(string content, int maxLength, string delimitr = Delimitary)
     {
-        List<string> result = new List<string>();
-
         if (string.IsNullOrWhiteSpace(content))
         {
             return content;
@@ -31,7 +34,7 @@ public class WordHelper
             if (Delimitary.IndexOf(content[end]) > -1)
             {
                 // if before space
-                if (end != (maxLength) && content[end + 1] == ' ')
+                if (end != maxLength-1 && content[end + 1] == ' ' || content[end] == '\n')
                 {
                     return content.Substring(0, end);
                 }

@@ -17,6 +17,10 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
         /// </summary>
         private const string DefaultLanguage = "en";
 
+        public int MaxLengthDescription = 4500;
+
+        public int MaxLenghtTitle = 100;
+
         private const int Rows = 20;
         private readonly IMediaService _mediaService;
         private readonly IYouTubeUploader _uploader;
@@ -58,7 +62,7 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                     var description = string.Empty;
                     if (video.Message != null)
                     {
-                        title = WordHelper.GetSplitByWord(GetTitle(video.Message), 100);
+                        title = WordHelper.GetSplitByWord(GetTitle(video.Message), MaxLenghtTitle, WordHelper.DelimitaryTitle);
                         description = GetDescription(video.Message);
                     }
 
@@ -114,6 +118,10 @@ namespace GettingMessagesTelegram.Drivers.Youtube.Impl
                 description.Append(translate.Content);
             }
 
+            if (description.Length > MaxLengthDescription)
+            {
+                return WordHelper.GetSplitByWord(description.ToString(), MaxLengthDescription, WordHelper.DelimitaryTitle);
+            }
 
             return description.ToString();
         }
